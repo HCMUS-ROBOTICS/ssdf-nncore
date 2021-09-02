@@ -1,9 +1,6 @@
-import os
-import sys
 from pathlib import Path
 import torch
 from glob import glob
-import numpy as np
 from PIL import Image
 from torchvision import transforms as tf
 
@@ -30,9 +27,9 @@ class SDataset(torch.utils.data.Dataset):
         self,
         rgb_path_ls: list,
         mask_path_ls: list,
-        train=True,
-        transform=None,
-        image_size=(224, 224),
+        train: bool = True,
+        transform: tf = None,
+        image_size: tuple = (224, 224),
     ):
         super(SDataset, self).__init__()
 
@@ -80,9 +77,9 @@ class SDataset(torch.utils.data.Dataset):
         image_folder_name: str,
         mask_folder_name: str,
         extension="png",
-        train=True,
-        transform=None,
-        image_size=(224, 224),
+        train: bool = True,
+        transform: tf = None,
+        image_size: tuple = (224, 224),
     ):
 
         data_root = Path(root)
