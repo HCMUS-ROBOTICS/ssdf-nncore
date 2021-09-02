@@ -28,35 +28,25 @@ class SDataset(torch.utils.data.Dataset):
 
     def __init__(
         self,
-        root: str,
+        rgb_path_ls: list,
+        mask_path_ls: list,
         train=True,
         transform=None,
-        mask_folder_name="labels",
-        image_folder_name="images",
-        extension="png",
         image_size=(224, 224),
     ):
         super(SDataset, self).__init__()
 
         self.train = train
-        self.data_root = Path(root)
-        self.img_folder = self.data_root / Path(image_folder_name)
-        self.lbl_folder = self.data_root / Path(mask_folder_name)
         self.image_size = image_size
-        self.extension = extension
         self.transform = (
             transform
             if transform is not None
             else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
         )
 
-        self.list_rgb = self.get_images_list(self.img_folder, self.extension)
-        self.list_mask = self.get_images_list(self.lbl_folder, self.extension)
+        self.list_rgb = rgb_path_ls
+        self.list_mask = mask_path_ls
         # self.list_depth = get_images_list(self.img_folder, self.extension)
-
-        assert len(self.list_rgb) == len(
-            self.list_mask
-        ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
 
     def __getitem__(self, idx):
 
@@ -72,6 +62,9 @@ class SDataset(torch.utils.data.Dataset):
         return im.long(), mask.long()
 
     def __len__(self):
+        assert len(self.list_rgb) == len(
+            self.list_mask
+        ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
         return len(self.list_rgb)
 
     @staticmethod
@@ -80,9 +73,33 @@ class SDataset(torch.utils.data.Dataset):
         print(folder_path)
         return glob(f"{folder_path}/*.{extension}")
 
+    @classmethod
+    def from_folder(
+        cls,
+        root: str,
+        image_folder_name: str,
+        mask_folder_name: str,
+        extension="png",
+        train=True,
+        transform=None,
+        image_size=(224, 224),
+    ):
+
+        data_root = Path(root)
+        img_folder = data_root / Path(image_folder_name)
+        lbl_folder = data_root / Path(mask_folder_name)
+
+        list_rgb = SDataset.get_images_list(img_folder, extension)
+        list_mask = SDataset.get_images_list(lbl_folder, extension)
+
+        obj = cls(
+            list_rgb, list_mask, train=train, transform=transform, image_size=image_size
+        )
+        return obj
+
 
 if __name__ == "__main__":
-    dataset = SDataset(
+    dataset = SDataset.from_folder(
         root="/mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data",
         train=True,
         mask_folder_name="mask",
