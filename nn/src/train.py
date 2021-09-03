@@ -6,16 +6,24 @@ from learner import Learner
 import torch
 from torch.nn import CrossEntropyLoss
 from torch.utils.data.dataloader import DataLoader
-from tqdm import tqdm
 from torch.optim import SGD, Adam, RMSprop
 
-from pathlib import Path
 from torchvision import transforms as tf
-
-from typing import Dict
 
 
 def train():
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--data-path", type=str, required=True)
+    parser.add_argument("--img-folder-name", type=str, required=True)
+    parser.add_argument("--msk-folder-name", type=str, required=True)
+    parser.add_argument("--train", action="store_true", default=False)
+    parser.add_argument("--extension", default="png", type=str)
+
+    args = parser.parse_args()
 
     device = get_device()
 
@@ -23,24 +31,24 @@ def train():
         tf.ToTensor(),
         tf.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ]
-    print("aaaaa")
 
     dataset = SDataset.from_folder(
-        root="/mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data",
-        train=True,
+        root=args.data_path,
+        train=args.train,
+        mask_folder_name=args.msk_folder_name,
+        image_folder_name=args.img_folder_name,
+        extension=args.extension,
         transform=transform,
-        mask_folder_name="mask",
-        image_folder_name="images",
-        extension="png",
-        image_size=(224, 224),
     )
+
     dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
 
-    model = MobileUnet().to(device)
+    model = globals()[args.model]().to(device)
     criterion = CrossEntropyLoss().to(device)
     metric = {"pixel accuracty": PixelAccuracy(nclasses=2)}
 
     optimizer = Adam(params=model.parameters())
+
     model_learner = Learner(
         train_data=dataloader,
         val_data=dataloader,
@@ -53,5 +61,7 @@ def train():
 
 
 if __name__ == "__main__":
+    # test command
+    # python train.py --model MobileUnet --data /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data --img images --msk mask --train
 
     train()

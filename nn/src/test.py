@@ -1,22 +1,26 @@
-from re import I
 from utils import move_to, AverageValueMeter, detach, load_model, get_device
 from models import MobileUnet
 from datasets import SDataset
 from metrics import PixelAccuracy
+from utils.typing import *
 
 import torch
 from torch.nn import CrossEntropyLoss
 from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 
-from pathlib import Path
 from torchvision import transforms as tf
-
-from typing import Dict
 
 
 @torch.no_grad()
-def evaluate(model, dataloader, metric, device, criterion, verbose=True):
+def evaluate(
+    model: Module,
+    dataloader: DataLoader,
+    metric: Metric,
+    device: torch.device,
+    criterion: Module,
+    verbose: bool = True,
+):
     running_loss = AverageValueMeter()
     for m in metric.values():
         m.reset()
