@@ -1,1 +1,1 @@
-from ssdf_datasets import *
+from .ssdf_datasets import *

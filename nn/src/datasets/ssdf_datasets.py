@@ -3,6 +3,7 @@ import torch
 from glob import glob
 from PIL import Image
 from torchvision import transforms as tf
+from utils.segmentation import binary_prediction
 
 __all__ = ["SDataset"]
 
@@ -55,8 +56,9 @@ class SDataset(torch.utils.data.Dataset):
 
         im = self.transform(im)
         mask = self.transform(mask)
+        mask = mask[0, :]
         mask[mask > 0] = 1
-        return im.long(), mask.long()
+        return im, mask.long()
 
     def __len__(self):
         assert len(self.list_rgb) == len(
