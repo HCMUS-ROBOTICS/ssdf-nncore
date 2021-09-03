@@ -13,7 +13,6 @@ class PixelAccuracy(Metric):
 
     def update(self, output, target):
         prediction = torch.argmax(output, dim=1)
-
         image_size = target.size(1) * target.size(2)
 
         ignore_mask = torch.zeros(target.size()).bool().to(target.device)

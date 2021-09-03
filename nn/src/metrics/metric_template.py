@@ -1,15 +1,15 @@
 class Metric:
     def __init__(self, *args, **kwargs):
-        raise NotImplementedError
+        NotImplemented
 
     def update(self):
-        raise NotImplementedError
+        NotImplemented
 
     def value(self):
-        raise NotImplementedError
+        NotImplemented
 
     def reset(self):
-        raise NotImplementedError
+        NotImplemented
 
     def summary(self):
-        raise NotImplementedError
+        NotImplemented
