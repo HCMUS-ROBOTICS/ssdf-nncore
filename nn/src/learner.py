@@ -1,5 +1,4 @@
 import torch
-from torch.serialization import save
 from datasets import *
 from utils import get_device, load_model, detach
 from metrics import Metric
@@ -7,12 +6,12 @@ from utils import vprint, get_device, move_to, save_model, AverageValueMeter
 from test import evaluate
 from utils.logger import TensorboardLogger
 from scheduler import *
+
 import numpy as np
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn import Module
 from torch import Tensor, device
-
 from torch.cuda.amp import GradScaler, autocast
 
 
