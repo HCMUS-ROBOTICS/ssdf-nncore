@@ -1,3 +1,4 @@
+from typing import List
 import torch
 import torch.nn as nn
 from collections import OrderedDict
@@ -218,10 +219,21 @@ class DoubleConv(nn.Module):
 
 
 if __name__ == "__main__":
-    rand_input = torch.rand((1, 3, 224, 224))
-    model = MobileUnet()
+
+    # test command
+    # python models/segmentation/mobileunet.py --input 1 3 224 224 --model MobileUnet
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-shape", required=True, nargs="+", type=int)
+    parser.add_argument("--model", type=str, required=True)
+
+    args = parser.parse_args()
+
+    rand_input = torch.rand(args.input_shape)
+    model = globals()[args.model]()
     print(model)
-    model.eval()
     with torch.no_grad():
         output = model(rand_input)
     print(output.size())
+
