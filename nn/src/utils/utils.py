@@ -13,12 +13,14 @@ def save_model(model: Module, path: str, verbose: bool = True):
         print("Model saved")
 
 
-def load_model(model: Module, path: str, verbose: bool = True):
-    model.load_state_dict(torch.load(path)["model_state_dict"])
+def load_model(model: Module, path: str, verbose: bool = True, map_location="cpu"):
+    model.load_state_dict(
+        torch.load(path, map_location=map_location)  # ["model_state_dict"]
+    )
     if verbose:
         print("Model loaded")
 
 
-def get_device():
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+def vprint(obj, vb):
+    if vb:
+        print(obj)
