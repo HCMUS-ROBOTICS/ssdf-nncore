@@ -53,12 +53,31 @@ def test():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model-path", type=str, required=True)
-    parser.add_argument("--data-path", type=str, required=True)
-    parser.add_argument("--img-folder-name", type=str, required=True)
-    parser.add_argument("--msk-folder-name", type=str, required=True)
-    parser.add_argument("--train", action="store_true", default=False)
-    parser.add_argument("--extension", default="png", type=str)
+    parser.add_argument(
+        "--model-path", type=str, required=True, help="path to pretrained model"
+    )
+    parser.add_argument(
+        "--data-path", type=str, required=True, help="path to data root folder"
+    )
+    parser.add_argument(
+        "--img-folder-name", type=str, required=True, help="image folder name"
+    )
+    parser.add_argument(
+        "--msk-folder-name", type=str, required=True, help="mask / label folder name"
+    )
+    parser.add_argument(
+        "--train",
+        action="store_true",
+        default=False,
+        help="training flag, not use in inference mode",
+    )
+
+    parser.add_argument(
+        "--extension",
+        default="png",
+        type=str,
+        help="image extenstion (example: png, jpg) ",
+    )
 
     args = parser.parse_args()
 
@@ -71,7 +90,7 @@ def test():
 
     dataset = SDataset.from_folder(
         root=args.data_path,
-        train=args.train,
+        train=True,
         mask_folder_name=args.msk_folder_name,
         image_folder_name=args.img_folder_name,
         extension=args.extension,
@@ -95,6 +114,4 @@ def test():
 
 
 if __name__ == "__main__":
-    # test command
-    # python test.py --model /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/src/tmp/best_loss.pth --data /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data --img images --msk mask --train
     test()

@@ -1,9 +1,11 @@
 import torch
-from ..metric_template import Metric
+from metrics.metric_template import Metric
+
+from utils.typing import *
 
 
 class PixelAccuracy(Metric):
-    def __init__(self, nclasses, ignore_index=None):
+    def __init__(self, nclasses: int, ignore_index: Optional[Any] = None):
         super().__init__()
         assert nclasses > 0
 
@@ -11,7 +13,7 @@ class PixelAccuracy(Metric):
         self.ignore_index = ignore_index
         self.reset()
 
-    def update(self, output, target):
+    def update(self, output: Tensor, target: Tensor):
         prediction = torch.argmax(output, dim=1)
         image_size = target.size(1) * target.size(2)
 

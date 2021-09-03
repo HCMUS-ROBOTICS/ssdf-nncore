@@ -11,9 +11,8 @@ import numpy as np
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn import Module
-from torch import Tensor, device
+from torch import device
 from torch.cuda.amp import GradScaler, autocast
-
 
 from tqdm import tqdm
 
@@ -74,7 +73,7 @@ class Learner(BaseLearner):
         self.best_metric = {k: 0.0 for k in self.metric.keys()}
         self.log_step = log_step
         self.val_step = val_step
-        self.scaler = GradScaler()
+        self.scaler = GradScaler(enabled=self.fp16)
         self.scheduler = StepLR(self.optimizer, step_size=3, gamma=0.1)
         for epoch in range(n_epochs):
             self.print(f"\nEpoch {epoch:>3d}")

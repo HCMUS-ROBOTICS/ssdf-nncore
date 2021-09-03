@@ -16,12 +16,34 @@ def train():
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, required=True)
-    parser.add_argument("--data-path", type=str, required=True)
-    parser.add_argument("--img-folder-name", type=str, required=True)
-    parser.add_argument("--msk-folder-name", type=str, required=True)
-    parser.add_argument("--train", action="store_true", default=False)
-    parser.add_argument("--extension", default="png", type=str)
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="MobileUnet",
+        help="model class (only support MobileUnet now)",
+    )
+    parser.add_argument(
+        "--data-path", type=str, required=True, help="path to data root folder"
+    )
+    parser.add_argument(
+        "--img-folder-name", type=str, required=True, help="image folder name"
+    )
+    parser.add_argument(
+        "--msk-folder-name", type=str, required=True, help="mask / label folder name"
+    )
+    parser.add_argument(
+        "--train",
+        action="store_true",
+        default=False,
+        help="training flag, not use in inference mode",
+    )
+
+    parser.add_argument(
+        "--extension",
+        default="png",
+        type=str,
+        help="image extenstion (example: png, jpg) ",
+    )
 
     args = parser.parse_args()
 
@@ -61,7 +83,5 @@ def train():
 
 
 if __name__ == "__main__":
-    # test command
-    # python train.py --model MobileUnet --data /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data --img images --msk mask --train
 
     train()

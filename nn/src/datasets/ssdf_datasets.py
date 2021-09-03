@@ -47,8 +47,12 @@ class SDataset(torch.utils.data.Dataset):
             if m_transform is not None
             else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
         )
-        self.list_rgb = rgb_path_ls
-        self.list_mask = mask_path_ls
+        self.list_rgb = rgb_path_ls[:100]
+        self.list_mask = mask_path_ls[:100]
+
+        assert len(self.list_rgb) == len(
+            self.list_mask
+        ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
         # self.list_depth = get_images_list(self.img_folder, self.extension)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
@@ -66,9 +70,7 @@ class SDataset(torch.utils.data.Dataset):
         return im, mask.long()
 
     def __len__(self) -> int:
-        assert len(self.list_rgb) == len(
-            self.list_mask
-        ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
+
         return len(self.list_rgb)
 
     @staticmethod
@@ -109,6 +111,9 @@ class SDataset(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
+    # test command
+    # python ssdf_dataset.py --data /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data --img images --msk mask --train
+
     import argparse
 
     parser = argparse.ArgumentParser()
@@ -116,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument("--img-folder-name", type=str, required=True)
     parser.add_argument("--msk-folder-name", type=str, required=True)
     parser.add_argument("--train", action="store_true", default=False)
-    parser.add_argument("--extension", default="png", type=str)
+    parser.add_argument("--ex   tension", default="png", type=str)
 
     args = parser.parse_args()
 
@@ -132,3 +137,4 @@ if __name__ == "__main__":
     print(len(dataset))
     print(dataset[0][0].shape)
     print(dataset[0][1].shape)
+

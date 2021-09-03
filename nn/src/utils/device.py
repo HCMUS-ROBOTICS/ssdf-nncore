@@ -1,11 +1,12 @@
 import torch
+from .typing import *
 
 
-def get_device():
+def get_device() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def move_to(obj, device):
+def move_to(obj: Any, device: torch.device):
     """Credit: https://discuss.pytorch.org/t/pytorch-tensor-to-device-for-a-list-of-dict/66283
     Arguments:
         obj {dict, list} -- Object to be moved to device
@@ -28,7 +29,7 @@ def move_to(obj, device):
         raise TypeError("Invalid type for move_to")
 
 
-def detach(obj):
+def detach(obj: Any):
     if torch.is_tensor(obj):
         return obj.detach()
     elif isinstance(obj, dict):
