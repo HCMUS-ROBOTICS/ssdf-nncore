@@ -47,8 +47,8 @@ class SDataset(torch.utils.data.Dataset):
             if m_transform is not None
             else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
         )
-        self.list_rgb = rgb_path_ls[:100]
-        self.list_mask = mask_path_ls[:100]
+        self.list_rgb = rgb_path_ls
+        self.list_mask = mask_path_ls
 
         assert len(self.list_rgb) == len(
             self.list_mask
