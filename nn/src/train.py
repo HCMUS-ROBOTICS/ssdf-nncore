@@ -49,11 +49,9 @@ def train():
         optimizer=optimizer,
         save_dir="./tmp",
     )
-    print("aaaaa")
     model_learner.fit(n_epochs=3, metrics=metric)
 
 
 if __name__ == "__main__":
-    print("aaaaa")
 
     train()
