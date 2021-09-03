@@ -44,7 +44,19 @@ def evaluate(model, dataloader, metric, device, criterion, verbose=True):
     return avg_loss, metric
 
 
-def test(model_path: Path):
+def test():
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model-path", type=str, required=True)
+    parser.add_argument("--data-path", type=str, required=True)
+    parser.add_argument("--img-folder-name", type=str, required=True)
+    parser.add_argument("--msk-folder-name", type=str, required=True)
+    parser.add_argument("--train", action="store_true", default=False)
+    parser.add_argument("--extension", default="png", type=str)
+
+    args = parser.parse_args()
 
     device = get_device()
 
@@ -54,24 +66,24 @@ def test(model_path: Path):
     ]
 
     dataset = SDataset.from_folder(
-        root="/mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data",
-        train=True,
+        root=args.data_path,
+        train=args.train,
+        mask_folder_name=args.msk_folder_name,
+        image_folder_name=args.img_folder_name,
+        extension=args.extension,
         transform=transform,
-        mask_folder_name="mask",
-        image_folder_name="images",
-        extension="png",
-        image_size=(224, 224),
     )
+
     dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
 
     model = MobileUnet().to(device)
     criterion = CrossEntropyLoss().to(device)
-    load_model(model, model_path, map_location=device)
+    load_model(model, args.model_path, map_location=device)
     metric = {"pixel accuracty": PixelAccuracy(nclasses=2)}
     result = evaluate(model, dataloader, metric, device, criterion, verbose=True)
 
     print("+ Evaluation result")
-    avg_loss = result[0].value()[0]
+    avg_loss = result[0]
     print("Loss:", avg_loss)
 
     for k in result[1].keys():
@@ -79,4 +91,6 @@ def test(model_path: Path):
 
 
 if __name__ == "__main__":
-    test(Path("../checkpoints/baseline.pth"))
+    # test command
+    # python test.py --model /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/src/tmp/best_loss.pth --data /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data --img images --msk mask --train
+    test()
