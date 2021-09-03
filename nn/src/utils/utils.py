@@ -7,8 +7,8 @@ def copy_model(model: Module) -> Module:
     return copy.deepcopy(model)
 
 
-def save_model(model: Module, path: str, verbose: bool = True):
-    torch.save(model.state_dict(), path)
+def save_model(data, path: str, verbose: bool = True):
+    torch.save(data, path)
     if verbose:
         print("Model saved")
 

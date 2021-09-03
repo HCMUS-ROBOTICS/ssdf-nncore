@@ -39,10 +39,12 @@ def evaluate(model, dataloader, metric, device, criterion, verbose=True):
         lbl = detach(lbl)
         for m in metric.values():
             m.update(outs, lbl)
-    return running_loss, metric
+
+    avg_loss = running_loss.value()[0]
+    return avg_loss, metric
 
 
-def test(model_path: Path, device_id: int = 0):
+def test(model_path: Path):
 
     device = get_device()
 

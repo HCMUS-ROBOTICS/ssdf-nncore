@@ -29,21 +29,27 @@ class SDataset(torch.utils.data.Dataset):
         rgb_path_ls: list,
         mask_path_ls: list,
         train: bool = True,
-        transform: tf = None,
+        transform: list = None,
+        m_transform: list = None,
         image_size: tuple = (224, 224),
     ):
         super(SDataset, self).__init__()
 
         self.train = train
         self.image_size = image_size
-        self.transform = (
-            transform
+        self.img_transform = (
+            tf.Compose([tf.Resize(self.image_size)] + transform)
             if transform is not None
             else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
         )
+        self.msk_transform = (
+            tf.Compose([tf.Resize(self.image_size)] + m_transform)
+            if m_transform is not None
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+        )
 
-        self.list_rgb = rgb_path_ls
-        self.list_mask = mask_path_ls
+        self.list_rgb = rgb_path_ls[:100]
+        self.list_mask = mask_path_ls[:100]
         # self.list_depth = get_images_list(self.img_folder, self.extension)
 
     def __getitem__(self, idx):
@@ -54,8 +60,8 @@ class SDataset(torch.utils.data.Dataset):
             im.size == mask.size
         ), f"Image and mask {idx} should be the same size, but are {im.size} and {mask.size}"
 
-        im = self.transform(im)
-        mask = self.transform(mask)
+        im = self.img_transform(im)
+        mask = self.msk_transform(mask)
         mask = mask[0, :]
         mask[mask > 0] = 1
         return im, mask.long()
@@ -80,7 +86,8 @@ class SDataset(torch.utils.data.Dataset):
         mask_folder_name: str,
         extension="png",
         train: bool = True,
-        transform: tf = None,
+        transform: list = None,
+        m_transform: list = None,
         image_size: tuple = (224, 224),
     ):
 
@@ -92,7 +99,12 @@ class SDataset(torch.utils.data.Dataset):
         list_mask = SDataset.get_images_list(lbl_folder, extension)
 
         obj = cls(
-            list_rgb, list_mask, train=train, transform=transform, image_size=image_size
+            list_rgb,
+            list_mask,
+            train=train,
+            transform=transform,
+            m_transform=m_transform,
+            image_size=image_size,
         )
         return obj
 
