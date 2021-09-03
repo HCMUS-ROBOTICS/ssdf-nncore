@@ -90,7 +90,7 @@ def test():
 
     dataset = SDataset.from_folder(
         root=args.data_path,
-        train=True,
+        train=args.train,
         mask_folder_name=args.msk_folder_name,
         image_folder_name=args.img_folder_name,
         extension=args.extension,

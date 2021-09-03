@@ -121,7 +121,7 @@ if __name__ == "__main__":
     parser.add_argument("--img-folder-name", type=str, required=True)
     parser.add_argument("--msk-folder-name", type=str, required=True)
     parser.add_argument("--train", action="store_true", default=False)
-    parser.add_argument("--ex   tension", default="png", type=str)
+    parser.add_argument("--extension", default="png", type=str)
 
     args = parser.parse_args()
 
