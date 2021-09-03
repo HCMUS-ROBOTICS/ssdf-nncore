@@ -3,7 +3,7 @@ import torch
 from glob import glob
 from PIL import Image
 from torchvision import transforms as tf
-from utils.segmentation import binary_prediction
+from utils.typing import *
 
 __all__ = ["SDataset"]
 
@@ -15,10 +15,10 @@ class DatasetTemplate(torch.utils.data.Dataset):
         super(DatasetTemplate, self).__init__()
 
     def __getitem__(self, idx):
-        return
+        NotImplemented
 
     def __len__(self):
-        return
+        NotImplemented
 
 
 class SDataset(torch.utils.data.Dataset):
@@ -26,12 +26,12 @@ class SDataset(torch.utils.data.Dataset):
 
     def __init__(
         self,
-        rgb_path_ls: list,
-        mask_path_ls: list,
+        rgb_path_ls: List[str],
+        mask_path_ls: List[str],
         train: bool = True,
-        transform: list = None,
-        m_transform: list = None,
-        image_size: tuple = (224, 224),
+        transform: Optional[List] = None,
+        m_transform: Optional[List] = None,
+        image_size: Tuple[int, int] = (224, 224),
     ):
         super(SDataset, self).__init__()
 
@@ -47,12 +47,11 @@ class SDataset(torch.utils.data.Dataset):
             if m_transform is not None
             else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
         )
-
-        self.list_rgb = rgb_path_ls[:100]
-        self.list_mask = mask_path_ls[:100]
+        self.list_rgb = rgb_path_ls
+        self.list_mask = mask_path_ls
         # self.list_depth = get_images_list(self.img_folder, self.extension)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
 
         im, mask = Image.open(self.list_rgb[idx]), Image.open(self.list_mask[idx])
 
@@ -66,30 +65,30 @@ class SDataset(torch.utils.data.Dataset):
         mask[mask > 0] = 1
         return im, mask.long()
 
-    def __len__(self):
+    def __len__(self) -> int:
         assert len(self.list_rgb) == len(
             self.list_mask
         ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
         return len(self.list_rgb)
 
     @staticmethod
-    def get_images_list(folder_path: Path, extension: str):
+    def get_images_list(folder_path: Path, extension: str) -> List[str]:
         folder_path = str(folder_path)
         print(folder_path)
         return glob(f"{folder_path}/*.{extension}")
 
     @classmethod
     def from_folder(
-        cls,
+        cls: Any,
         root: str,
         image_folder_name: str,
         mask_folder_name: str,
         extension="png",
         train: bool = True,
-        transform: list = None,
-        m_transform: list = None,
+        transform: Optional[List] = None,
+        m_transform: Optional[List] = None,
         image_size: tuple = (224, 224),
-    ):
+    ) -> Any:
 
         data_root = Path(root)
         img_folder = data_root / Path(image_folder_name)
@@ -110,17 +109,26 @@ class SDataset(torch.utils.data.Dataset):
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--data-path", type=str, required=True)
+    parser.add_argument("--img-folder-name", type=str, required=True)
+    parser.add_argument("--msk-folder-name", type=str, required=True)
+    parser.add_argument("--train", action="store_true", default=False)
+    parser.add_argument("--extension", default="png", type=str)
+
+    args = parser.parse_args()
+
     dataset = SDataset.from_folder(
-        root="/mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data",
-        train=True,
-        mask_folder_name="mask",
-        image_folder_name="images",
-        extension="png",
+        root=args.data_path,
+        train=args.train,
+        mask_folder_name=args.msk_folder_name,
+        image_folder_name=args.img_folder_name,
+        extension=args.extension,
         image_size=(224, 224),
     )
 
     print(len(dataset))
-
-    for im, label in dataset:
-        print(label)
-        break
+    print(dataset[0][0].shape)
+    print(dataset[0][1].shape)
