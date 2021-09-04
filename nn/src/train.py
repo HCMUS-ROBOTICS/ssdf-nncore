@@ -1,10 +1,10 @@
-from utils import move_to, AverageValueMeter, detach, load_model, get_device
-from models import MobileUnet
+from utils import get_device
+from models import MobileUnet, ModelWithLoss
+from models.loss import CE
 from datasets import SDataset
 from metrics import PixelAccuracy
-from learner import Learner
+from learner import SupervisedLearner
 import torch
-from torch.nn import CrossEntropyLoss
 from torch.utils.data.dataloader import DataLoader
 from torch.optim import SGD, Adam, RMSprop
 
@@ -32,10 +32,10 @@ def train():
         "--msk-folder-name", type=str, required=True, help="mask / label folder name"
     )
     parser.add_argument(
-        "--train",
+        "--test",
         action="store_true",
         default=False,
-        help="training flag, not use in inference mode",
+        help="test flag, not use in training mode",
     )
 
     parser.add_argument(
@@ -56,7 +56,7 @@ def train():
 
     dataset = SDataset.from_folder(
         root=args.data_path,
-        train=args.train,
+        test=args.test,
         mask_folder_name=args.msk_folder_name,
         image_folder_name=args.img_folder_name,
         extension=args.extension,
@@ -66,19 +66,22 @@ def train():
     dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
 
     model = globals()[args.model]().to(device)
-    criterion = CrossEntropyLoss().to(device)
+    criterion = CE().to(device)
+    modelwithloss = ModelWithLoss(model, criterion).to(device)
+
     metric = {"pixel accuracty": PixelAccuracy(nclasses=2)}
 
     optimizer = Adam(params=model.parameters())
 
-    model_learner = Learner(
+    model_learner = SupervisedLearner(
         train_data=dataloader,
         val_data=dataloader,
-        model=model,
+        model=modelwithloss,
         criterion=criterion,
         optimizer=optimizer,
         save_dir="./tmp",
     )
+
     model_learner.fit(n_epochs=3, metrics=metric)
 
 

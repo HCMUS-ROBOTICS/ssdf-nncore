@@ -1,11 +1,11 @@
 from utils import move_to, AverageValueMeter, detach, load_model, get_device
-from models import MobileUnet
+from models import MobileUnet, ModelWithLoss
+from models.loss import CE
 from datasets import SDataset
 from metrics import PixelAccuracy
 from utils.typing import *
 
 import torch
-from torch.nn import CrossEntropyLoss
 from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 
@@ -26,23 +26,21 @@ def evaluate(
         m.reset()
     model.eval()
     progress_bar = tqdm(dataloader) if verbose else dataloader
-    for i, (inp, lbl) in enumerate(progress_bar):
+    for i, batch in enumerate(progress_bar):
         # 1: Load inputs and labels
-        inp = move_to(inp, device)
-        lbl = move_to(lbl, device)
+        batch = move_to(batch, device)
 
         # 2: Get network outputs
-        outs = model(inp)
-        # pdb.set_trace()
         # 3: Calculate the loss
-        loss = criterion(outs, lbl)
+
+        outs, loss, loss_dict = model(batch)
         # 4: Update loss
         running_loss.add(loss.item())
         # 5: Update metric
         outs = detach(outs)
-        lbl = detach(lbl)
+        batch = detach(batch)
         for m in metric.values():
-            m.update(outs, lbl)
+            m.update(outs, batch)
 
     avg_loss = running_loss.value()[0]
     return avg_loss, metric
@@ -66,10 +64,7 @@ def test():
         "--msk-folder-name", type=str, required=True, help="mask / label folder name"
     )
     parser.add_argument(
-        "--train",
-        action="store_true",
-        default=False,
-        help="training flag, not use in inference mode",
+        "--test", action="store_true", default=False, help="inference flag ",
     )
 
     parser.add_argument(
@@ -90,7 +85,7 @@ def test():
 
     dataset = SDataset.from_folder(
         root=args.data_path,
-        train=args.train,
+        test=args.test,
         mask_folder_name=args.msk_folder_name,
         image_folder_name=args.img_folder_name,
         extension=args.extension,
@@ -100,10 +95,12 @@ def test():
     dataloader = DataLoader(dataset, batch_size=2, shuffle=False)
 
     model = MobileUnet().to(device)
-    criterion = CrossEntropyLoss().to(device)
+    criterion = CE().to(device)
+    modelwl = ModelWithLoss(model, criterion).to(device)
+
     load_model(model, args.model_path, map_location=device)
     metric = {"pixel accuracty": PixelAccuracy(nclasses=2)}
-    result = evaluate(model, dataloader, metric, device, criterion, verbose=True)
+    result = evaluate(modelwl, dataloader, metric, device, criterion, verbose=True)
 
     print("+ Evaluation result")
     avg_loss = result[0]

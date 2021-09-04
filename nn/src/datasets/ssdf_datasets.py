@@ -28,14 +28,14 @@ class SDataset(torch.utils.data.Dataset):
         self,
         rgb_path_ls: List[str],
         mask_path_ls: List[str],
-        train: bool = True,
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
+        test: bool = False,
     ):
         super(SDataset, self).__init__()
 
-        self.train = train
+        self.train = not (test)
         self.image_size = image_size
         self.img_transform = (
             tf.Compose([tf.Resize(self.image_size)] + transform)
@@ -67,7 +67,8 @@ class SDataset(torch.utils.data.Dataset):
         mask = self.msk_transform(mask)
         mask = mask[0, :]
         mask[mask > 0] = 1
-        return im, mask.long()
+        item = {"input": im, "mask": mask.long()}
+        return item
 
     def __len__(self) -> int:
 
@@ -86,7 +87,7 @@ class SDataset(torch.utils.data.Dataset):
         image_folder_name: str,
         mask_folder_name: str,
         extension="png",
-        train: bool = True,
+        test: bool = False,
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
         image_size: tuple = (224, 224),
@@ -102,7 +103,7 @@ class SDataset(torch.utils.data.Dataset):
         obj = cls(
             list_rgb,
             list_mask,
-            train=train,
+            test=test,
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
