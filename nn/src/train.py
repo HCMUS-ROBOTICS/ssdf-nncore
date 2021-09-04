@@ -77,7 +77,6 @@ def train():
         train_data=dataloader,
         val_data=dataloader,
         model=modelwithloss,
-        criterion=criterion,
         optimizer=optimizer,
         save_dir="./tmp",
     )

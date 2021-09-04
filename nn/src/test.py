@@ -18,7 +18,6 @@ def evaluate(
     dataloader: DataLoader,
     metric: Metric,
     device: torch.device,
-    criterion: Module,
     verbose: bool = True,
 ):
     running_loss = AverageValueMeter()
@@ -96,11 +95,12 @@ def test():
 
     model = MobileUnet().to(device)
     criterion = CE().to(device)
-    modelwl = ModelWithLoss(model, criterion).to(device)
+
+    modelwithloss = ModelWithLoss(model, criterion).to(device)
 
     load_model(model, args.model_path, map_location=device)
     metric = {"pixel accuracty": PixelAccuracy(nclasses=2)}
-    result = evaluate(modelwl, dataloader, metric, device, criterion, verbose=True)
+    result = evaluate(modelwithloss, dataloader, metric, device, verbose=True)
 
     print("+ Evaluation result")
     avg_loss = result[0]
