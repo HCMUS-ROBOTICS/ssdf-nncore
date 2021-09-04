@@ -104,7 +104,7 @@ class SupervisedLearner(BaseLearner):
     def save_checkpoint(self, epoch, val_loss, val_metric):
         data = {
             "epoch": epoch,
-            "model_state_dict": self.model.state_dict(),
+            "model_state_dict": self.model.model.state_dict(),
             "optimizer_state_dict": self.optimizer.state_dict(),
         }
 
