@@ -1,6 +1,7 @@
 import torch
 import copy
 from .typing import *
+import yaml
 
 
 def copy_model(model: Module) -> Module:
@@ -19,6 +20,10 @@ def load_model(model: Module, path: str, verbose: bool = True, map_location="cpu
     )
     if verbose:
         print("Model loaded")
+
+
+def load_yaml(cfg_path: str):
+    return yaml.load(open(cfg_path, "r"), Loader=yaml.Loader)
 
 
 def vprint(obj: str, verbose: bool):
