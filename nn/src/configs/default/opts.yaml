@@ -1,17 +1,23 @@
 opts:
+  pretrained: null
   id: default
-  debug: 0
+
+  debug: True # if debug = true, model will not save checkpoint
   demo: False
-  nepochs: 20
-  val_step: 1
-  log_step: 1
-  load_model: path
-  gpus: 1,2,3,4
-  num_workers: 4
-  seed: 123
-  verbose: True
-  batch_size: 10
   resume: False
   test: False
-  num_iters: 10
-  save_dir: path
+
+  nepochs: 20
+  batch_size: 10
+
+  gpus: 0,1,2,3
+  num_workers: 4
+  fp16: True
+
+  val_step: 1
+  log_step: 1
+
+  num_iters: -1
+  save_dir: ./tmptmp
+  verbose: True
+  seed: 123

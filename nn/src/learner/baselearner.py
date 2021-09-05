@@ -3,6 +3,8 @@ from utils.typing import *
 from utils.logger import TensorboardLogger
 from pathlib import Path
 from tqdm import tqdm
+from metrics import Metric
+import numpy as np
 from utils import vprint, AverageValueMeter, detach, move_to
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
@@ -11,26 +13,31 @@ from torch.utils.data import DataLoader
 class BaseLearner:
     def __init__(
         self,
-        exp_id: str,
-        opt: Any,
+        cfg: Any,
         save_dir: str,
         train_data: DataLoader,
         val_data: DataLoader,
         device: torch.device,
         model: Module,
+        scheduler: lr_scheduler,
         optimizer: torch.optim.Optimizer,
+        metrics: Dict[str, Metric],
         criterion: Optional[Module] = None,
         verbose: bool = True,
     ):
         self.train_data, self.val_data = train_data, val_data
         self.model, self.criterion, self.optimizer = model, criterion, optimizer
-        self.save_dir = Path(save_dir) / exp_id
+        self.save_dir = Path(save_dir)
         self.tsboard = TensorboardLogger(path=self.save_dir)
-        self.opt = opt
         self.device = device
         self.scaler = GradScaler(enabled=False)
         self.max_grad_norm = 1.0
         self.verbose = verbose
+        self.metric = metrics
+        self.best_metric = {k: 0.0 for k in self.metric.keys()}
+        self.best_loss = np.inf
+        self.scheduler = scheduler
+        self.cfg = cfg
 
     def fit():
         raise NotImplementedError
@@ -49,7 +56,7 @@ class BaseLearner:
 
             # 2: Clear gradients from previous iteration
             self.optimizer.zero_grad()
-            with autocast(enabled=self.fp16):
+            with autocast(enabled=self.cfg.fp16):
                 # 3: Get network outputs
                 # 4: Calculate the loss
                 outs, loss, loss_dict = self.model(batch)
@@ -65,7 +72,7 @@ class BaseLearner:
                 running_loss.add(loss.item())
                 total_loss.add(loss.item())
 
-                if (i + 1) % self.log_step == 0 or (i + 1) == len(dataloader):
+                if (i + 1) % self.cfg.log_step == 0 or (i + 1) == len(dataloader):
                     self.tsboard.update_loss(
                         "train", running_loss.value()[0], epoch * len(dataloader) + i
                     )

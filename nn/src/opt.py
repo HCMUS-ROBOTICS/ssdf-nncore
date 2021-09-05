@@ -12,7 +12,7 @@ class opts(object):
         self.parser = argparse.ArgumentParser()
 
         self.parser.add_argument("--id")
-        self.parser.add_argument("--test", action="store_true")
+        self.parser.add_argument("--test", action="store_true", default=False)
         self.parser.add_argument(
             "--debug",
             type=int,
@@ -23,7 +23,13 @@ class opts(object):
             "4: save all visualizations to disk",
         )
         self.parser.add_argument(
-            "--demo", help="save lastest sample",
+            "--demo", help="save lastest sample", action="store_true", default=False
+        )
+        self.parser.add_argument(
+            "--fp16",
+            help="use floating point (only work in gpu machine)",
+            action="store_true",
+            default=False,
         )
         self.parser.add_argument(
             "--load-model", default="", help="path to pretrained model"

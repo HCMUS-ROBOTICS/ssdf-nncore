@@ -1,54 +1,75 @@
 learner:
   name: SupervisedLearner
   args:
-model:
-  name: ModelWithLoss
+device:
+  name: get_device
   args:
-    model:
-      freeze_backbone: False
-      name: resnext50_32x4d
-      from_pretrained: True
-    loss:
-      name: FocalLoss
-      args: Null
+model:
+  name: MobileUnet
+  args:
+criterion:
+  name: CE
+  args:
 optimizer:
   name: Adam
   args:
     lr: 0.0001
 metric:
-  - name: Accuracy
-    args: Null
+  - name: PixelAccuracy
+    args:
+      nclasses: 2
 scheduler:
   name: StepLR
   args:
     step_size: 3
     gamma: 0.2
     last_epoch: -1
-dataset:
-  name:
-  trainval: True
-  train:
-    name: LeafDatasetAdvance
+data:
+  trainval:
+    name: SDataset
+    test_ratio: 0.2
     args:
-      data_dir: data/train_images/
-      csv_path: lists/train.csv
-      IMG_SIZE: 512
-      is_train: True
+      from_folder: True
+      root: ../data
+      test: True
+      mask_folder_name: mask
+      image_folder_name: images
+      extension: png
     loader:
-      name: DataLoader
-      args:
-        batch_size: 16
-        shuffle: True
-        drop_last: True
-  val:
-    name: LeafDatasetAdvance
-    args:
-      data_dir: data/train_images/
-      csv_path: lists/val.csv
-      IMG_SIZE: 512
-      is_train: False
-    loader:
-      name: DataLoader
-      args:
-        batch_size: 16
-        shuffle: True
+      train:
+        name: DataLoader
+        args:
+          batch_size: 16
+          shuffle: True
+          drop_last: True
+      val:
+        name: DataLoader
+        args:
+          batch_size: 16
+          shuffle: False
+          drop_last: False
+  # train:
+  #   name: LeafDatasetAdvance
+  #   args:
+  #     data_dir: data/train_images/
+  #     csv_path: lists/train.csv
+  #     IMG_SIZE: 512
+  #     is_train: True
+  #   loader:
+  #     name: DataLoader
+  #     args:
+  #       batch_size: 16
+  #       shuffle: True
+  #       drop_last: True
+  # val:
+  #   name: LeafDatasetAdvance
+  #   args:
+  #     data_dir: data/train_images/
+  #     csv_path: lists/val.csv
+  #     IMG_SIZE: 512
+  #     is_train: False
+  #   loader:
+  #     name: DataLoader
+  #     args:
+  #       batch_size: 16
+  #       shuffle: True

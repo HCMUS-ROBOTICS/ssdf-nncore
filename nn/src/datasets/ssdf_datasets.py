@@ -25,30 +25,14 @@ class SDataset(torch.utils.data.Dataset):
     """Some Information about SDataset"""
 
     def __init__(
-        self,
-        rgb_path_ls: List[str],
-        mask_path_ls: List[str],
-        transform: Optional[List] = None,
-        m_transform: Optional[List] = None,
-        image_size: Tuple[int, int] = (224, 224),
-        test: bool = False,
+        self, from_folder=False, **kwargs,
     ):
         super(SDataset, self).__init__()
 
-        self.train = not (test)
-        self.image_size = image_size
-        self.img_transform = (
-            tf.Compose([tf.Resize(self.image_size)] + transform)
-            if transform is not None
-            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
-        )
-        self.msk_transform = (
-            tf.Compose([tf.Resize(self.image_size)] + m_transform)
-            if m_transform is not None
-            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
-        )
-        self.list_rgb = rgb_path_ls
-        self.list_mask = mask_path_ls
+        if from_folder:
+            self.from_folder(**kwargs)
+        else:
+            self.from_list(**kwargs)
 
         assert len(self.list_rgb) == len(
             self.list_mask
@@ -71,18 +55,40 @@ class SDataset(torch.utils.data.Dataset):
         return item
 
     def __len__(self) -> int:
-
         return len(self.list_rgb)
 
     @staticmethod
     def get_images_list(folder_path: Path, extension: str) -> List[str]:
         folder_path = str(folder_path)
-        print(folder_path)
         return glob(f"{folder_path}/*.{extension}")
 
-    @classmethod
+    def from_list(
+        self,
+        rgb_path_ls: Optional[List[str]] = None,
+        mask_path_ls: Optional[List[str]] = None,
+        transform: Optional[List] = None,
+        m_transform: Optional[List] = None,
+        image_size: Tuple[int, int] = (224, 224),
+        test: bool = False,
+        **kwargs,
+    ):
+        self.list_rgb = rgb_path_ls
+        self.list_mask = mask_path_ls
+        self.train = not (test)
+        self.image_size = image_size
+        self.img_transform = (
+            tf.Compose([tf.Resize(self.image_size)] + transform)
+            if transform is not None
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+        )
+        self.msk_transform = (
+            tf.Compose([tf.Resize(self.image_size)] + m_transform)
+            if m_transform is not None
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+        )
+
     def from_folder(
-        cls: Any,
+        self,
         root: str,
         image_folder_name: str,
         mask_folder_name: str,
@@ -91,6 +97,7 @@ class SDataset(torch.utils.data.Dataset):
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
         image_size: tuple = (224, 224),
+        **kwargs,
     ) -> Any:
 
         data_root = Path(root)
@@ -100,15 +107,15 @@ class SDataset(torch.utils.data.Dataset):
         list_rgb = SDataset.get_images_list(img_folder, extension)
         list_mask = SDataset.get_images_list(lbl_folder, extension)
 
-        obj = cls(
+        self.from_list(
             list_rgb,
             list_mask,
             test=test,
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
+            **kwargs,
         )
-        return obj
 
 
 if __name__ == "__main__":

@@ -1,72 +1,62 @@
 import torch
 from datasets import *
 from utils.typing import *
-from metrics import Metric
 from utils import (
-    vprint,
     get_device,
     save_model,
-    load_model,
+    load_checkpoint,
 )
 from test import evaluate
-from scheduler import *
+from schedulers import *
 
 import numpy as np
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn import Module
 from torch import device
-from torch.cuda.amp import autocast
 
 
 from pathlib import Path
 from .baselearner import BaseLearner
+from torch.cuda.amp import GradScaler, autocast
+from metrics import Metric
 
 
 class SupervisedLearner(BaseLearner):
     def __init__(
         self,
+        cfg: Any,
         train_data: DataLoader,
         val_data: DataLoader,
+        metrics: Dict[str, Metric],
         model: Module,
+        scheduler: lr_scheduler,
         optimizer: Optimizer,
         device: device = get_device(),
-        load_path: Optional[str] = None,
-        save_dir: str = "./",
     ):
         super().__init__(
-            exp_id="default",
-            opt=None,
-            save_dir=save_dir,
+            save_dir=cfg.save_dir,
             train_data=train_data,
             val_data=val_data,
             device=device,
             model=model,
+            metrics=metrics,
+            scheduler=scheduler,
             optimizer=optimizer,
             criterion=None,
+            cfg=cfg,
         )
-        if load_path is not None:
-            load_model(self.model, load_path)
-        self.verbose = True
+        if cfg.pretrained is not None:
+            cp = load_checkpoint(cfg.pretrained)
+            self.model.model.load_state_dict(cp["model_state_dict"])
+            if cfg.resume:
+                self.optimizer.load_state_dict(["optimizer_state_dict"])
+        self.verbose = cfg.verbose
+        self.scaler = GradScaler(enabled=cfg.fp16)
+        self.cfg = cfg
 
-    def fit(
-        self,
-        n_epochs: int,
-        metrics: Dict[str, Metric] = None,
-        log_step=1,
-        val_step=1,
-        fp16: bool = False,
-        verbose: bool = True,
-    ) -> float:
-        self.fp16 = fp16
-        self.debug = False
-        self.metric = metrics
-        self.best_loss = np.inf
-        self.best_metric = {k: 0.0 for k in self.metric.keys()}
-        self.log_step = log_step
-        self.val_step = val_step
-        self.scheduler = StepLR(self.optimizer, step_size=3, gamma=0.1)
-        for epoch in range(n_epochs):
+    def fit(self):
+        for epoch in range(self.cfg.nepochs):
             self.print(f"\nEpoch {epoch:>3d}")
             self.print("-----------------------------------")
 
@@ -81,8 +71,8 @@ class SupervisedLearner(BaseLearner):
                 m.summary()
 
             # 2: Evalutation phase
-            if (epoch + 1) % self.val_step == 0:
-                with autocast(enabled=self.fp16):
+            if (epoch + 1) % self.cfg.val_step == 0:
+                with autocast(enabled=self.cfg.fp16):
                     # 2: Evaluating model
                     avg_loss = self.evaluate(epoch, dataloader=self.val_data)
 
@@ -95,7 +85,7 @@ class SupervisedLearner(BaseLearner):
                     self.scheduler.step(avg_loss)
 
                     # 4: Saving checkpoints
-                    if not self.debug:
+                    if not self.cfg.debug:
                         # Get latest val loss here
                         val_metric = {k: m.value() for k, m in self.metric.items()}
                         self.save_checkpoint(epoch, avg_loss, val_metric)
@@ -135,7 +125,6 @@ class SupervisedLearner(BaseLearner):
             dataloader=dataloader,
             metric=self.metric,
             device=self.device,
-            criterion=self.criterion,
             verbose=self.verbose,
         )
         self.metric = metric

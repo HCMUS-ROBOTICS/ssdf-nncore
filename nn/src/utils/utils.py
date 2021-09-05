@@ -14,10 +14,18 @@ def save_model(data: Dict[str, Any], path: str, verbose: bool = True):
         print("Model saved")
 
 
-def load_model(model: Module, path: str, verbose: bool = True, map_location="cpu"):
-    model.load_state_dict(
-        torch.load(path, map_location=map_location)["model_state_dict"]
-    )
+def load_checkpoint(path: str, map_location="cpu"):
+    return torch.load(path, map_location=map_location)
+
+
+def load_model(
+    model: Module,
+    path: str,
+    verbose: bool = True,
+    map_location="cpu",
+    key="model_state_dict",
+):
+    model.load_state_dict(torch.load(path, map_location=map_location))[key]
     if verbose:
         print("Model loaded")
 
