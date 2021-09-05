@@ -1,15 +1,14 @@
 from utils.typing import *
 
 import argparse
-import yaml
-
 from argparse import Namespace
 from utils import load_yaml
+from pathlib import Path
 
 
 class opts(object):
-    def __init__(self, cfg_path: str = "default.yaml"):
-        self.args = load_yaml(cfg_path=cfg_path)
+    def __init__(self, cfg_path: str = "configs/default/opts.yaml"):
+        self.args = load_yaml(cfg_path=cfg_path)["opts"]
         self.parser = argparse.ArgumentParser()
 
         self.parser.add_argument("--id")
@@ -72,7 +71,7 @@ class opts(object):
     @staticmethod
     def fill(a: Dict, b: Dict) -> Dict:
         for k, v in b.items():
-            if a.get(k) is None:
+            if a.get(k, None) is None:
                 a.update({k: v})
         return a
 
@@ -87,17 +86,12 @@ class opts(object):
 
         opt.gpus_str = opt.gpus
         opt.gpus = list(map(int, opt.gpus.split(",")))
-
+        opt.save_dir = Path(opt.save_dir) / opt.id
         if opt.debug > 0:
             opt.num_workers = 0
             opt.batch_size = 1
             opt.gpus = [opt.gpus[0]]
             opt.master_batch_size = -1
-        print("The output will be saved to ", opt.save_dir)
-
+        print(f"The output will be saved to {opt.save_dir}")
         return opt
 
-
-if __name__ == "__main__":
-    opt = opts().parse()
-    print(opt)
