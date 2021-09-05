@@ -1,0 +1,17 @@
+opts:
+  id: default
+  debug: 0
+  demo: False
+  nepochs: 20
+  val_step: 1
+  log_step: 1
+  load_model: path
+  gpus: 1,2,3,4
+  num_workers: 4
+  seed: 123
+  verbose: True
+  batch_size: 10
+  resume: False
+  test: False
+  num_iters: 10
+  save_dir: path
