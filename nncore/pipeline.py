@@ -1,8 +1,11 @@
-from opt import opts
-from utils.getter import get_instance, get_data
-from utils.typing import *
-from utils import load_yaml
-from models import ModelWithLoss
+from .opt import opts
+
+from .utils.getter import get_instance, get_data
+from .utils.typing import *
+from .utils import load_yaml
+
+from .models import ModelWithLoss
+from .test import evaluate
 
 from torchvision.transforms import transforms as tf
 
@@ -52,12 +55,25 @@ class Pipeline(object):
             metrics=self.metric,
             optimizer=self.optimizer,
         )
+        self.sanitycheck()
+
+    def sanitycheck(self):
+        self.learner.print("Sanity checking before training")
+        self.evaluate()
 
     def fit(self):
         self.learner.fit()
 
+    def evaluate(self):
+        avg_loss, metric = evaluate(
+            model=self.model,
+            dataloader=self.val_dataloader,
+            metric=self.metric,
+            device=self.device,
+            verbose=self.opt.verbose,
+        )
+        print("Sanity checking result")
+        print(f"Loss: {avg_loss}")
+        for m in metric.values():
+            m.summary()
 
-if __name__ == "__main__":
-    opt = opts().parse()
-    train_pipeline = Pipeline(opt, cfg_path="./configs/default/learner.yaml")
-    train_pipeline.fit()

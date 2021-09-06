@@ -1,24 +1,29 @@
 from torch.optim import SGD, Adam, RMSprop
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
 from torch.utils.data import DataLoader, random_split
-from importlib import import_module
 
-from datasets import *
-from models import *
-from metrics import *
-from externals import *
-from utils import *
-from learner import *
+from ..datasets import *
+from ..models import *
+from ..metrics import *
+from ..externals import *
+from ..utils import *
+from ..learner import *
 
 
 def get_instance(config, **kwargs):
     # ref https://github.com/vltanh/torchan/blob/master/torchan/utils/getter.py
     assert "name" in config
     config.setdefault("args", {})
-    if config["args"] is None:
+    if config.get("args", None) is None:
         config["args"] = {}
+    if config.get("constructor", None) is None:
+        return globals()[config["name"]](**config["args"], **kwargs)
+    return dispatch(config["name"], config["constructor"])(**config["args"], **kwargs)
 
-    return globals()[config["name"]](**config["args"], **kwargs)
+
+def dispatch(class_name: str, method_name: str):
+    # ref https://stackoverflow.com/questions/43908656/how-to-invoke-a-python-static-method-inside-class-via-string-method-name
+    return getattr(globals()[class_name], method_name)
 
 
 def get_function(name):
@@ -50,9 +55,8 @@ def get_data(cfg, return_dataset=False):
         trainval_cfg = cfg["trainval"]
         # Split dataset train:val = ratio:(1-ratio)
         ratio = trainval_cfg["test_ratio"]
-        dataset = get_instance(trainval_cfg)
-        val_sz = max(1, int(ratio * len(dataset)))
-        train_sz = len(dataset) - val_sz
+        dataset = get_instance(trainval_cfg["dataset"])
+        train_sz, val_sz = get_dataset_size(ratio=ratio, dataset_sz=len(dataset))
         train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
         # Get dataloader
         train_dataloader = get_dataloader(
@@ -66,4 +70,10 @@ def get_data(cfg, return_dataset=False):
         if return_dataset
         else (train_dataloader, val_dataloader)
     )
+
+
+def get_dataset_size(ratio: float, dataset_sz: int):
+    val_sz = max(1, int(ratio * dataset_sz))
+    train_sz = dataset_sz - val_sz
+    return train_sz, val_sz
 

@@ -1,11 +1,12 @@
 import torch
-from utils.typing import *
-from utils.logger import TensorboardLogger
+from ..utils.typing import *
+from ..utils.logger import TensorboardLogger
+from ..utils import vprint, AverageValueMeter, detach, move_to
+from ..metrics import Metric
+
 from pathlib import Path
 from tqdm import tqdm
-from metrics import Metric
 import numpy as np
-from utils import vprint, AverageValueMeter, detach, move_to
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
 

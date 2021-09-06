@@ -26,15 +26,16 @@ scheduler:
     last_epoch: -1
 data:
   trainval:
-    name: SDataset
     test_ratio: 0.2
-    args:
-      from_folder: True
-      root: ../data
-      test: True
-      mask_folder_name: mask
-      image_folder_name: images
-      extension: png
+    dataset:
+      name: SDataset
+      constructor: from_folder
+      args:
+        root: ../data
+        test: True
+        mask_folder_name: mask
+        image_folder_name: images
+        extension: png
     loader:
       train:
         name: DataLoader

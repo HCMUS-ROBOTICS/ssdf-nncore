@@ -1,13 +1,13 @@
 import torch
-from datasets import *
-from utils.typing import *
-from utils import (
+from ..datasets import *
+from ..utils.typing import *
+from ..utils import (
     get_device,
     save_model,
     load_checkpoint,
 )
-from test import evaluate
-from schedulers import *
+from ..test import evaluate
+from ..schedulers import *
 
 import numpy as np
 from torch.optim import Optimizer
@@ -17,9 +17,10 @@ from torch import device
 
 
 from pathlib import Path
-from .baselearner import BaseLearner
 from torch.cuda.amp import GradScaler, autocast
-from metrics import Metric
+
+from .baselearner import BaseLearner
+from ..metrics import Metric
 
 
 class SupervisedLearner(BaseLearner):

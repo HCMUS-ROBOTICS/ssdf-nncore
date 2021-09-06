@@ -1,7 +1,7 @@
 import torch
-from metrics.metric_template import Metric
+from ..metric_template import Metric
 
-from utils.typing import *
+from ...utils.typing import *
 
 
 class PixelAccuracy(Metric):

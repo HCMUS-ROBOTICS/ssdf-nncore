@@ -1,8 +1,8 @@
-from utils.typing import *
+from .utils.typing import *
+from .utils import load_yaml
 
 import argparse
 from argparse import Namespace
-from utils import load_yaml
 from pathlib import Path
 
 

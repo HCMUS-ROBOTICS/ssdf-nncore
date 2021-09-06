@@ -3,7 +3,8 @@ import torch
 from glob import glob
 from PIL import Image
 from torchvision import transforms as tf
-from utils.typing import *
+
+from ..utils.typing import *
 
 __all__ = ["SDataset"]
 
@@ -25,14 +26,30 @@ class SDataset(torch.utils.data.Dataset):
     """Some Information about SDataset"""
 
     def __init__(
-        self, from_folder=False, **kwargs,
+        self,
+        rgb_path_ls: List[str],
+        mask_path_ls: List[str],
+        transform: Optional[List] = None,
+        m_transform: Optional[List] = None,
+        image_size: Tuple[int, int] = (224, 224),
+        test: bool = False,
     ):
         super(SDataset, self).__init__()
 
-        if from_folder:
-            self.from_folder(**kwargs)
-        else:
-            self.from_list(**kwargs)
+        self.list_rgb = rgb_path_ls
+        self.list_mask = mask_path_ls
+        self.train = not (test)
+        self.image_size = image_size
+        self.img_transform = (
+            tf.Compose([tf.Resize(self.image_size)] + transform)
+            if transform is not None
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+        )
+        self.msk_transform = (
+            tf.Compose([tf.Resize(self.image_size)] + m_transform)
+            if m_transform is not None
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+        )
 
         assert len(self.list_rgb) == len(
             self.list_mask
@@ -62,33 +79,28 @@ class SDataset(torch.utils.data.Dataset):
         folder_path = str(folder_path)
         return glob(f"{folder_path}/*.{extension}")
 
+    @classmethod
     def from_list(
-        self,
+        cls,
         rgb_path_ls: Optional[List[str]] = None,
         mask_path_ls: Optional[List[str]] = None,
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
-        **kwargs,
     ):
-        self.list_rgb = rgb_path_ls
-        self.list_mask = mask_path_ls
-        self.train = not (test)
-        self.image_size = image_size
-        self.img_transform = (
-            tf.Compose([tf.Resize(self.image_size)] + transform)
-            if transform is not None
-            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
-        )
-        self.msk_transform = (
-            tf.Compose([tf.Resize(self.image_size)] + m_transform)
-            if m_transform is not None
-            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+        return cls(
+            rgb_path_ls=rgb_path_ls,
+            mask_path_ls=mask_path_ls,
+            test=test,
+            transform=transform,
+            m_transform=m_transform,
+            image_size=image_size,
         )
 
+    @classmethod
     def from_folder(
-        self,
+        cls,
         root: str,
         image_folder_name: str,
         mask_folder_name: str,
@@ -97,8 +109,7 @@ class SDataset(torch.utils.data.Dataset):
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
         image_size: tuple = (224, 224),
-        **kwargs,
-    ) -> Any:
+    ):
 
         data_root = Path(root)
         img_folder = data_root / Path(image_folder_name)
@@ -107,35 +118,31 @@ class SDataset(torch.utils.data.Dataset):
         list_rgb = SDataset.get_images_list(img_folder, extension)
         list_mask = SDataset.get_images_list(lbl_folder, extension)
 
-        self.from_list(
+        return cls(
             list_rgb,
             list_mask,
             test=test,
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
-            **kwargs,
         )
 
 
 if __name__ == "__main__":
-    # test command
-    # python ssdf_dataset.py --data /mnt/c/Users/nhoxs/workspace/ssdf/devtools/nn/data --img images --msk mask --train
-
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-path", type=str, required=True)
     parser.add_argument("--img-folder-name", type=str, required=True)
     parser.add_argument("--msk-folder-name", type=str, required=True)
-    parser.add_argument("--train", action="store_true", default=False)
+    parser.add_argument("--test", action="store_true", default=False)
     parser.add_argument("--extension", default="png", type=str)
 
     args = parser.parse_args()
 
     dataset = SDataset.from_folder(
         root=args.data_path,
-        train=args.train,
+        test=args.test,
         mask_folder_name=args.msk_folder_name,
         image_folder_name=args.img_folder_name,
         extension=args.extension,
