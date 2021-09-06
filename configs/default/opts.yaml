@@ -1,0 +1,23 @@
+opts:
+  pretrained: null # untested yet
+  id: default
+
+  debug: True # if debug = true, model will not save checkpoint
+  demo: False # untested yet
+  resume: False # untested yet
+  test: False # untested yet
+
+  nepochs: 20
+  batch_size: 10
+
+  gpus: 0,1,2,3 # untested yet
+  num_workers: 4
+  fp16: True # untested yet
+
+  val_step: 1
+  log_step: 1
+
+  num_iters: -1 # unsupport yet
+  save_dir: ./runs
+  verbose: True
+  seed: 123

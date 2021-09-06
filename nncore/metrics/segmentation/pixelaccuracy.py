@@ -1,7 +1,7 @@
 import torch
-from metrics.metric_template import Metric
+from ..metric_template import Metric
 
-from utils.typing import *
+from ...utils.typing import *
 
 
 class PixelAccuracy(Metric):
@@ -13,7 +13,8 @@ class PixelAccuracy(Metric):
         self.ignore_index = ignore_index
         self.reset()
 
-    def update(self, output: Tensor, target: Tensor):
+    def update(self, output: Tensor, batch: Dict[str, Any]):
+        target = batch["mask"]
         prediction = torch.argmax(output, dim=1)
         image_size = target.size(1) * target.size(2)
 
