@@ -57,13 +57,13 @@ class Pipeline(object):
             metrics=self.metric,
             optimizer=self.optimizer,
         )
-        self.sanitycheck()
 
     def sanitycheck(self):
         self.learner.print("Sanity checking before training")
         self.evaluate()
 
     def fit(self):
+        self.sanitycheck()
         self.learner.fit()
 
     def evaluate(self):
@@ -74,7 +74,7 @@ class Pipeline(object):
             device=self.device,
             verbose=self.opt.verbose,
         )
-        print("Sanity checking result")
+        print("Evaluate result")
         print(f"Loss: {avg_loss}")
         for m in metric.values():
             m.summary()

@@ -18,6 +18,6 @@ opts:
   log_step: 1
 
   num_iters: -1 # unsupport yet
-  save_dir: ./tmptmp
+  save_dir: ./runs
   verbose: True
   seed: 123

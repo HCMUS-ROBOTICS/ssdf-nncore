@@ -49,28 +49,3 @@ data:
           batch_size: 16
           shuffle: False
           drop_last: False
-  # train:
-  #   name: LeafDatasetAdvance
-  #   args:
-  #     data_dir: data/train_images/
-  #     csv_path: lists/train.csv
-  #     IMG_SIZE: 512
-  #     is_train: True
-  #   loader:
-  #     name: DataLoader
-  #     args:
-  #       batch_size: 16
-  #       shuffle: True
-  #       drop_last: True
-  # val:
-  #   name: LeafDatasetAdvance
-  #   args:
-  #     data_dir: data/train_images/
-  #     csv_path: lists/val.csv
-  #     IMG_SIZE: 512
-  #     is_train: False
-  #   loader:
-  #     name: DataLoader
-  #     args:
-  #       batch_size: 16
-  #       shuffle: True
