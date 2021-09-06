@@ -16,10 +16,12 @@ class Pipeline(object):
     def __init__(self, opt: opts, cfg_path: Optional[str] = None):
         super(Pipeline, self).__init__()
         self.opt = opt
-        assert (
-            cfg_path is not None
+        assert (cfg_path is not None) or (
+            opt.cfg_pipeline is not None
         ), "learner params is none, \ please create config file follow default format. \n You could find an example in nn/configs/default/learner.yaml"
-        self.cfg = load_yaml(cfg_path)
+        self.cfg = (
+            load_yaml(cfg_path) if cfg_path is not None else load_yaml(opt.cfg_pipeline)
+        )
 
         self.device = get_instance(self.cfg["device"])
 

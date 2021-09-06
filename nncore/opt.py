@@ -7,7 +7,7 @@ from pathlib import Path
 
 
 class opts(object):
-    def __init__(self, cfg_path: str = "configs/default/opts.yaml"):
+    def __init__(self, cfg_path: str):
         self.args = load_yaml(cfg_path=cfg_path)["opts"]
         self.parser = argparse.ArgumentParser()
 
@@ -33,6 +33,9 @@ class opts(object):
         )
         self.parser.add_argument(
             "--load-model", default="", help="path to pretrained model"
+        )
+        self.parser.add_argument(
+            "--cfg-pipeline", default=None, help="path to pipeline yaml"
         )
         self.parser.add_argument(
             "--resume",
