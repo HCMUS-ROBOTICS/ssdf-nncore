@@ -79,3 +79,5 @@ python train.py \
 --msk mask \
 --train
 ```
+
+test
