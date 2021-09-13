@@ -17,3 +17,6 @@ class TensorboardLogger:
 
     def update_lr(self, gid, value, step):
         self.update_scalar(f"lr/group_{gid}", value, step)
+
+    def update_figure(self, tag, image, step):
+        self.writer.add_figure(tag, image, global_step=step)
