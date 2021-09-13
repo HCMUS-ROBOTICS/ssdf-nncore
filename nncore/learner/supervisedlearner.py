@@ -159,3 +159,5 @@ class SupervisedLearner(BaseLearner):
         self.metric = metric
         return avg_loss
 
+    def save_result(self, pred, batch):
+        save_dir = self.save_dir / Path("samples")

@@ -111,14 +111,14 @@ class BaseLearner:
                 batch = detach(batch)
                 for m in self.metric.values():
                     m.update(outs, batch)
-
+        self.save_result(outs, batch)
         avg_loss = total_loss.value()[0]
         return avg_loss
 
     def save_checkpoints():
         raise NotImplementedError
 
-    def save_result():
+    def save_result(self, pred, batch):
         raise NotImplementedError
 
     def print(self, obj):

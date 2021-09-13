@@ -1,1 +1,1 @@
-from .CE import CE
+from .CEwithstat import CEwithstat
