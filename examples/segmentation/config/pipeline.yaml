@@ -8,7 +8,7 @@ model:
   name: MobileUnet
   args:
 criterion:
-  name: CE
+  name: CEwithstat
   args:
 optimizer:
   name: Adam
