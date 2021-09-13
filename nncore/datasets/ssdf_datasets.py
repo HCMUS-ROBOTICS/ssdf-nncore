@@ -23,7 +23,12 @@ class DatasetTemplate(torch.utils.data.Dataset):
 
 
 class SDataset(torch.utils.data.Dataset):
-    """Some Information about SDataset"""
+    """SDataset Binary segmentation dataset
+
+    Attributes:
+        from_list(**args): Create dataset from list
+        from_folder(**args): Create dataset from folder path
+    """
 
     def __init__(
         self,
@@ -76,6 +81,15 @@ class SDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def get_images_list(folder_path: Path, extension: str) -> List[str]:
+        """Return file list with specify type from folder
+
+        Args:
+            folder_path (Path): folder path
+            extension (str): file extension
+
+        Returns:
+            List[str]: full path list of items in folder
+        """
         folder_path = str(folder_path)
         return glob(f"{folder_path}/*.{extension}")
 
@@ -89,6 +103,19 @@ class SDataset(torch.utils.data.Dataset):
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
     ):
+        """[summary]
+
+        Args:
+            rgb_path_ls (Optional[List[str]], optional): full image paths list. Defaults to None.
+            mask_path_ls (Optional[List[str]], optional): full label paths list. Defaults to None.
+            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
+            transform (Optional[List], optional): rgb transform. Defaults to None.
+            m_transform (Optional[List], optional): label transform. Defaults to None.
+            image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224)..
+        Returns:
+            SDataset: dataset class
+
+        """
         return cls(
             rgb_path_ls=rgb_path_ls,
             mask_path_ls=mask_path_ls,
@@ -108,8 +135,23 @@ class SDataset(torch.utils.data.Dataset):
         test: bool = False,
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
-        image_size: tuple = (224, 224),
+        image_size: Tuple[int, int] = (224, 224),
     ):
+        r"""From folder method
+
+        Args:
+            root (str): folder root
+            image_folder_name (str): image folder name
+            mask_folder_name (str): label folder name
+            extension (str, optional): image file type extenstion. Defaults to "png".
+            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
+            transform (Optional[List], optional): rgb transform. Defaults to None.
+            m_transform (Optional[List], optional): label transform. Defaults to None.
+            image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224).
+
+        Returns:
+            SDataset: dataset class
+        """
 
         data_root = Path(root)
         img_folder = data_root / Path(image_folder_name)
