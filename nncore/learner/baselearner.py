@@ -12,6 +12,24 @@ from torch.utils.data import DataLoader
 
 
 class BaseLearner:
+    r"""BaseLearner class 
+
+    Abstract learner class, support training and evaluate strategy.
+
+    Args:
+        cfg (Any): [description]
+        save_dir (str): save folder directory path
+        train_data (DataLoader): train dataloader
+        val_data (DataLoader): validation dataloader
+        device (torch.device): training device
+        model (Module): model to optimize
+        scheduler (lr_scheduler): learning rate scheduler  
+        optimizer (torch.optim.Optimizer): optimizer 
+        metrics (Dict[str, Metric]): evaluate metrics
+        criterion (Optional[Module], optional): Loss function. Defaults to None.
+        verbose (bool, optional): if verbose is False, model does not log anything during training process. Defaults to True.
+    """
+
     def __init__(
         self,
         cfg: Any,
@@ -44,6 +62,15 @@ class BaseLearner:
         raise NotImplementedError
 
     def train_epoch(self, epoch: int, dataloader: DataLoader) -> float:
+        """Training epoch
+
+        Args:
+            epoch (int): [description]
+            dataloader (DataLoader): [description]
+
+        Returns:
+            float: [description]
+        """
         running_loss = AverageValueMeter()
         total_loss = AverageValueMeter()
         for m in self.metric.values():

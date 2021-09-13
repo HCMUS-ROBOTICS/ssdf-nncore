@@ -24,6 +24,22 @@ from ..metrics import Metric
 
 
 class SupervisedLearner(BaseLearner):
+    r"""SupervisedLearner class 
+
+    Support training and evaluate strategy for supervise learning 
+    
+    Args:
+        cfg (Any): [description]
+        save_dir (str): save folder directory path
+        train_data (DataLoader): train dataloader
+        val_data (DataLoader): validation dataloader
+        device (torch.device): training device
+        model (Module): model to optimize
+        scheduler (lr_scheduler): learning rate scheduler  
+        optimizer (torch.optim.Optimizer): optimizer 
+        metrics (Dict[str, Metric]): evaluate metrics
+    """
+
     def __init__(
         self,
         cfg: Any,
@@ -92,7 +108,19 @@ class SupervisedLearner(BaseLearner):
                         self.save_checkpoint(epoch, avg_loss, val_metric)
             self.print("-----------------------------------")
 
-    def save_checkpoint(self, epoch, val_loss, val_metric):
+    def save_checkpoint(
+        self, epoch: int, val_loss: float, val_metric: Dict[str, float]
+    ) -> None:
+        r"""Save checkpoint method
+
+        Saving 
+        -   model state dict
+        -   optimizer state dict
+        Args:
+            epoch (int): current epoch
+            val_loss (float): validation loss
+            val_metric (Dict[str, float]): validation metrics result
+        """
         data = {
             "epoch": epoch,
             "model_state_dict": self.model.model.state_dict(),
