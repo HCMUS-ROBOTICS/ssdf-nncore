@@ -118,7 +118,7 @@ class SDataset(torch.utils.data.Dataset):
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
     ):
-        """[summary]
+        """From list method
 
         Args:
             rgb_path_ls (Optional[List[str]], optional): full image paths list. Defaults to None.
