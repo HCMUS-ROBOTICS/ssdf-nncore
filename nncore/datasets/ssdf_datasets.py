@@ -23,11 +23,26 @@ class DatasetTemplate(torch.utils.data.Dataset):
 
 
 class SDataset(torch.utils.data.Dataset):
-    """SDataset Binary segmentation dataset
+    r"""SDataset Binary segmentation dataset
+
 
     Attributes:
         from_list(**args): Create dataset from list
         from_folder(**args): Create dataset from folder path
+    
+    Examples: 
+    
+        dataset = SDataset.from_folder(
+            root='./data',
+            mask_folder_name='masks',
+            image_folder_name='images',
+            test=False,
+        )
+
+        print(len(dataset))
+        print(dataset[0][0].shape)
+        print(dataset[0][1].shape)
+
     """
 
     def __init__(
@@ -114,7 +129,6 @@ class SDataset(torch.utils.data.Dataset):
             image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224)..
         Returns:
             SDataset: dataset class
-
         """
         return cls(
             rgb_path_ls=rgb_path_ls,
@@ -168,30 +182,4 @@ class SDataset(torch.utils.data.Dataset):
             m_transform=m_transform,
             image_size=image_size,
         )
-
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data-path", type=str, required=True)
-    parser.add_argument("--img-folder-name", type=str, required=True)
-    parser.add_argument("--msk-folder-name", type=str, required=True)
-    parser.add_argument("--test", action="store_true", default=False)
-    parser.add_argument("--extension", default="png", type=str)
-
-    args = parser.parse_args()
-
-    dataset = SDataset.from_folder(
-        root=args.data_path,
-        test=args.test,
-        mask_folder_name=args.msk_folder_name,
-        image_folder_name=args.img_folder_name,
-        extension=args.extension,
-        image_size=(224, 224),
-    )
-
-    print(len(dataset))
-    print(dataset[0][0].shape)
-    print(dataset[0][1].shape)
 
