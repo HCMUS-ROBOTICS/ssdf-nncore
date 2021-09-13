@@ -131,7 +131,7 @@ class SupervisedLearner(BaseLearner):
             self.print(
                 f"Loss is improved from {self.best_loss: .6f} to {val_loss: .6f}. Saving weights...",
             )
-            save_model(data, self.save_dir / Path("best_loss.pth"))
+            save_model(data, self.save_dir / "checkpoints" / Path("best_loss.pth"))
             # Update best_loss
             self.best_loss = val_loss
         else:
@@ -142,7 +142,9 @@ class SupervisedLearner(BaseLearner):
                 self.print(
                     f"{k} is improved from {self.best_metric[k]: .6f} to {val_metric[k]: .6f}. Saving weights...",
                 )
-                save_model(data, self.save_dir / Path(f"best_metric_{k}.pth"))
+                save_model(
+                    data, self.save_dir / "checkpoints" / Path(f"best_metric_{k}.pth")
+                )
                 self.best_metric[k] = val_metric[k]
             else:
                 self.print(f"{k} is not improved from {self.best_metric[k]:.6f}.")
@@ -160,4 +162,4 @@ class SupervisedLearner(BaseLearner):
         return avg_loss
 
     def save_result(self, pred, batch):
-        save_dir = self.save_dir / Path("samples")
+        save_dir = self.save_dir / "samples"

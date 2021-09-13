@@ -57,6 +57,8 @@ class BaseLearner:
         self.best_loss = np.inf
         self.scheduler = scheduler
         self.cfg = cfg
+        (self.save_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
+        (self.save_dir / "samples").mkdir(parents=True, exist_ok=True)
 
     def fit():
         raise NotImplementedError
@@ -119,7 +121,7 @@ class BaseLearner:
         raise NotImplementedError
 
     def save_result(self, pred, batch):
-        raise NotImplementedError
+        NotImplemented
 
     def print(self, obj):
         vprint(obj, self.verbose)
