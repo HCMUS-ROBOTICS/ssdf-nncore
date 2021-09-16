@@ -72,6 +72,11 @@ class SupervisedLearner(BaseLearner):
 
     def fit(self):
         for epoch in range(self.cfg.nepochs):
+
+            # Note learning rate
+            for i, group in enumerate(self.optimizer.param_groups):
+                self.tsboard.update_lr(i, group["lr"], epoch)
+
             self.epoch = epoch
             self.print(f"\nEpoch {epoch:>3d}")
             self.print("-----------------------------------")
@@ -94,6 +99,7 @@ class SupervisedLearner(BaseLearner):
 
                     self.print("+ Evaluation result")
                     self.print(f"Loss: {avg_loss}")
+
                     for m in self.metric.values():
                         m.summary()
 
@@ -159,5 +165,11 @@ class SupervisedLearner(BaseLearner):
             verbose=self.verbose,
         )
         self.metric = metric
+
+        self.tsboard.update_loss("val", avg_loss, epoch)
+
+        for k in self.metric.keys():
+            m = metric[k].value()
+            self.tsboard.update_metric("val", k, m, epoch)
         return avg_loss
 
