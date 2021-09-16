@@ -1,11 +1,7 @@
 import torch
 from ..datasets import *
 from ..utils.typing import *
-from ..utils import (
-    get_device,
-    save_model,
-    load_checkpoint,
-)
+from ..utils import *
 from ..test import evaluate
 from ..schedulers import *
 
@@ -14,13 +10,15 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn import Module
 from torch import device
-
+import cv2
 
 from pathlib import Path
 from torch.cuda.amp import GradScaler, autocast
 
 from .baselearner import BaseLearner
 from ..metrics import Metric
+
+from torchvision.utils import save_image
 
 
 class SupervisedLearner(BaseLearner):
@@ -111,6 +109,7 @@ class SupervisedLearner(BaseLearner):
     def save_checkpoint(
         self, epoch: int, val_loss: float, val_metric: Dict[str, float]
     ) -> None:
+
         r"""Save checkpoint method
 
         Saving 
@@ -161,5 +160,3 @@ class SupervisedLearner(BaseLearner):
         self.metric = metric
         return avg_loss
 
-    def save_result(self, pred, batch):
-        save_dir = self.save_dir / "samples"

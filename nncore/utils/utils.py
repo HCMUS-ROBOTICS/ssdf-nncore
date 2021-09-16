@@ -37,3 +37,4 @@ def load_yaml(cfg_path: str):
 def vprint(obj: str, verbose: bool):
     if verbose:
         print(obj)
+
