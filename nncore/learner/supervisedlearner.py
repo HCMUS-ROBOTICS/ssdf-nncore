@@ -72,6 +72,7 @@ class SupervisedLearner(BaseLearner):
 
     def fit(self):
         for epoch in range(self.cfg.nepochs):
+            self.epoch = epoch
             self.print(f"\nEpoch {epoch:>3d}")
             self.print("-----------------------------------")
 

@@ -53,11 +53,12 @@ class SDataset(torch.utils.data.Dataset):
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
+        sample: bool = False,
     ):
         super(SDataset, self).__init__()
 
-        self.list_rgb = rgb_path_ls
-        self.list_mask = mask_path_ls
+        self.list_rgb = rgb_path_ls[:50] if sample else rgb_path_ls
+        self.list_mask = mask_path_ls[:50] if sample else mask_path_ls
         self.train = not (test)
         self.image_size = image_size
         self.img_transform = (
@@ -117,6 +118,7 @@ class SDataset(torch.utils.data.Dataset):
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
+        sample: bool = False,
     ):
         """From list method
 
@@ -137,6 +139,7 @@ class SDataset(torch.utils.data.Dataset):
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
+            sample=sample,
         )
 
     @classmethod
@@ -150,6 +153,7 @@ class SDataset(torch.utils.data.Dataset):
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
+        sample: bool = False,
     ):
         r"""From folder method
 
@@ -181,5 +185,6 @@ class SDataset(torch.utils.data.Dataset):
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
+            sample=sample,
         )
 

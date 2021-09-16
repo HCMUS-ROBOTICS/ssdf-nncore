@@ -2,6 +2,7 @@ import torch
 import copy
 from .typing import *
 import yaml
+import matplotlib.pyplot as plt
 
 
 def copy_model(model: Module) -> Module:
@@ -38,3 +39,8 @@ def vprint(obj: str, verbose: bool):
     if verbose:
         print(obj)
 
+
+def tensor2plt(obj: Tensor):
+    fig = plt.figure()
+    plt.imshow(obj.permute(1, 2, 0))
+    return fig

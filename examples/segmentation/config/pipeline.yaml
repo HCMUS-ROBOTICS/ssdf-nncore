@@ -1,5 +1,5 @@
 learner:
-  name: SupervisedLearner
+  name: SegmentationLearner
   args:
 device:
   name: get_device
@@ -31,6 +31,7 @@ data:
       name: SDataset
       constructor: from_folder
       args:
+        sample: True
         root: ./data
         test: True
         mask_folder_name: mask

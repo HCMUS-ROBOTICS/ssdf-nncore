@@ -66,7 +66,12 @@ class SegmentationLearner(SupervisedLearner):
         save_image(rgbs, str(save_dir / "last_batch_inputs.png"), normalize=True)
         save_image(lbls, str(save_dir / "last_batch_labels.png"))
         save_image(outs, str(save_dir / "last_batch_preds.png"))
-        self.logger.update_figure(
-            f"samples/{self.epoch}_{self.iters}_{idx}", fig_cam, step=self.epoch
+
+        rbgs_plt = tensor2plt(rgbs)
+        lbls_plt = tensor2plt(lbls)
+        outs_plt = tensor2plt(outs)
+
+        self.tsboard.update_figure(
+            f"samples/last_batch ", [rbgs_plt, lbls_plt, outs_plt], step=self.epoch
         )
 
