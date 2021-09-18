@@ -2,7 +2,7 @@ opts:
   pretrained: null # untested yet
   id: default
 
-  debug: True # if debug = true, model will not save checkpoint
+  debug: False # if debug = true, model will not save checkpoint
   demo: False # untested yet
   resume: False # untested yet
   test: False # untested yet

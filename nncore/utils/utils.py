@@ -26,7 +26,7 @@ def load_model(
     map_location="cpu",
     key="model_state_dict",
 ):
-    model.load_state_dict(torch.load(path, map_location=map_location))[key]
+    model.load_state_dict(torch.load(path, map_location=map_location)[key])
     if verbose:
         print("Model loaded")
 

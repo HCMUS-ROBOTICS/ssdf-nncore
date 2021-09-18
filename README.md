@@ -60,29 +60,33 @@ NNcore is a deep learning framework focusing on solving autonomous-driving probl
 this part not work yet
 
 ```python
+from nncore.utils.getter import get_instance
+from nncore.utils import load_model, load_yaml, get_device, image_batch_show
+from nncore.models.wrapper import SegmentationModel
+from nncore.utils.segmentation import multi_class_prediction
+from torchvision.utils import save_image
 
-from nncore.learner import SegmentationLearner
-# 1. Load finetuned task
-model = SegmentationLearner.load_pretrained("model.pth") 
 
-# 2. Translate a few sentences!
-predictions = model.predict(
-    [
-        './data/im00001.png'
-        './data/im00002.png',
-        './data/im00003.png',
-    ]
-)
+from pathlib import Path
 
-# 2. Translate a few sentences!
-predictions = model.predict_batch(
-    [
-        './data/im00001.png'
-        './data/im00002.png',
-        './data/im00003.png',
-    ],
-    batch_size = 3
-)
+if __name__ == "__main__":
+    checkpoint_folder = Path("./path/to/checkpointfolder")
+    cfg = load_yaml(checkpoint_folder / "config.yaml")
+    model = get_instance(cfg["pipeline"]["model"])
+    load_model(model, checkpoint_folder / "best_loss.pth")
+    device = get_device()
+    inference_model = SegmentationModel(model, None)
+    rgbs, pred = inference_model.predict(
+        [
+            "./data/images/00001.png",
+            "./data/images/00002.png",
+            "./data/images/00003.png",
+            "./data/images/00004.png",
+        ],
+        device=device,
+        batch_size=2,
+        return_inp=True,
+    )
 
 ```
 
@@ -148,7 +152,27 @@ scheduler:
   name: # scheduler lr name
   args:
 data:
-  trainval: # optional, if trainval is not Null, pipeline will split your dataset
+  # optional, if train and val is not Null, pipeline will use your dataset directly
+  train: # dataset name
+    name:                   
+    args:
+    loader:
+      name: DataLoader
+      args:
+        batch_size:     16
+        shuffle:        True
+        drop_last:      True 
+  val: 
+    name: # dataset name                   
+    args:
+    loader:
+      name: DataLoader
+      args:
+        batch_size:     16
+        shuffle:        True
+        drop_last:      False
+  # optional, if trainval is not Null, train and val is Null, pipeline will split your dataset
+  trainval: 
     test_ratio: 0.2
     dataset:
       name: #dataset name

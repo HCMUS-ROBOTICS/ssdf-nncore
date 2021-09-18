@@ -63,7 +63,9 @@ class Pipeline(object):
         save_cfg["opt"] = vars(opt)
         save_cfg["pipeline"] = self.cfg
         save_cfg["opt"]["save_dir"] = str(save_cfg["opt"]["save_dir"])
-        with open(self.learner.save_dir / "config.yaml", "w") as outfile:
+        with open(
+            self.learner.save_dir / "checkpoints" / "config.yaml", "w"
+        ) as outfile:
             yaml.dump(save_cfg, outfile, default_flow_style=False)
 
     def sanitycheck(self):
@@ -86,4 +88,3 @@ class Pipeline(object):
         print(f"Loss: {avg_loss}")
         for m in metric.values():
             m.summary()
-

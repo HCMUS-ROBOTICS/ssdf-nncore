@@ -172,4 +172,3 @@ class SupervisedLearner(BaseLearner):
             m = metric[k].value()
             self.tsboard.update_metric("val", k, m, epoch)
         return avg_loss
-
