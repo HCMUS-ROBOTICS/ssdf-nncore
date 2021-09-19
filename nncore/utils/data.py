@@ -1,6 +1,7 @@
 import os
 import requests
 import zipfile
+from tqdm.auto import tqdm as tq
 
 
 def download_data(url: str, path: str = "data/", verbose: bool = False) -> None:
