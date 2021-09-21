@@ -30,6 +30,14 @@ def move_to(obj: Any, device: torch.device):
 
 
 def detach(obj: Any):
+    """Credit: https://discuss.pytorch.org/t/pytorch-tensor-to-device-for-a-list-of-dict/66283
+    Arguments:
+        obj {dict, list} -- Object to be moved to cpu
+    Raises:
+        TypeError: Invalid type for detach
+    Returns:
+        type(obj) -- same object but moved to cpu
+    """
     if torch.is_tensor(obj):
         return obj.detach()
     elif isinstance(obj, dict):

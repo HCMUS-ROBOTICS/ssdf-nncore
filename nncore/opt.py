@@ -6,6 +6,9 @@ from argparse import Namespace
 from pathlib import Path
 
 
+from datetime import datetime
+
+
 class opts(object):
     def __init__(self, cfg_path: str):
         self.args = load_yaml(cfg_path=cfg_path)["opts"]
@@ -95,7 +98,10 @@ class opts(object):
 
         opt.gpus_str = opt.gpus
         opt.gpus = list(map(int, opt.gpus.split(",")))
-        opt.save_dir = Path(opt.save_dir) / opt.id
+        opt.save_dir = (
+            Path(opt.save_dir)
+            / f'{opt.id}_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}'
+        )
         if opt.debug > 0:
             opt.num_workers = 0
             opt.batch_size = 1

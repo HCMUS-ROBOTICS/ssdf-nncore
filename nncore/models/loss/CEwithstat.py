@@ -4,11 +4,11 @@ from torch import nn
 import torch
 
 
-class CE(nn.Module):
-    """Some Information about CE"""
+class CEwithstat(nn.Module):
+    r"""CEwithstat is warper of cross-entropy loss"""
 
     def __init__(self):
-        super(CE, self).__init__()
+        super(CEwithstat, self).__init__()
 
     def forward(self, pred, batch):
         loss = F.cross_entropy(pred, batch["mask"])

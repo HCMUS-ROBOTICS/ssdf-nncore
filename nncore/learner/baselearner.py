@@ -12,6 +12,24 @@ from torch.utils.data import DataLoader
 
 
 class BaseLearner:
+    r"""BaseLearner class 
+
+    Abstract learner class, support training and evaluate strategy.
+
+    Args:
+        cfg (Any): [description]
+        save_dir (str): save folder directory path
+        train_data (DataLoader): train dataloader
+        val_data (DataLoader): validation dataloader
+        device (torch.device): training device
+        model (Module): model to optimize
+        scheduler (lr_scheduler): learning rate scheduler  
+        optimizer (torch.optim.Optimizer): optimizer 
+        metrics (Dict[str, Metric]): evaluate metrics
+        criterion (Optional[Module], optional): Loss function. Defaults to None.
+        verbose (bool, optional): if verbose is False, model does not log anything during training process. Defaults to True.
+    """
+
     def __init__(
         self,
         cfg: Any,
@@ -39,11 +57,22 @@ class BaseLearner:
         self.best_loss = np.inf
         self.scheduler = scheduler
         self.cfg = cfg
+        (self.save_dir / "checkpoints").mkdir(parents=True, exist_ok=True)
+        (self.save_dir / "samples").mkdir(parents=True, exist_ok=True)
 
     def fit():
         raise NotImplementedError
 
     def train_epoch(self, epoch: int, dataloader: DataLoader) -> float:
+        """Training epoch
+
+        Args:
+            epoch (int): [description]
+            dataloader (DataLoader): [description]
+
+        Returns:
+            float: [description]
+        """
         running_loss = AverageValueMeter()
         total_loss = AverageValueMeter()
         for m in self.metric.values():
@@ -84,15 +113,15 @@ class BaseLearner:
                 batch = detach(batch)
                 for m in self.metric.values():
                     m.update(outs, batch)
-
+        self.save_result(outs, batch)
         avg_loss = total_loss.value()[0]
         return avg_loss
 
     def save_checkpoints():
         raise NotImplementedError
 
-    def save_result():
-        raise NotImplementedError
+    def save_result(self, pred, batch):
+        NotImplemented
 
     def print(self, obj):
         vprint(obj, self.verbose)

@@ -5,6 +5,16 @@ from ...utils.typing import *
 
 
 class PixelAccuracy(Metric):
+
+    """Pixel accuracy metric
+
+    Segmentation multi classes metric 
+
+    Args:
+        nclasses (int): number of classé
+        ignore_index (Optional[Any], optional): [description]. Defaults to None.
+    """
+
     def __init__(self, nclasses: int, ignore_index: Optional[Any] = None):
         super().__init__()
         assert nclasses > 0

@@ -23,7 +23,27 @@ class DatasetTemplate(torch.utils.data.Dataset):
 
 
 class SDataset(torch.utils.data.Dataset):
-    """Some Information about SDataset"""
+    r"""SDataset Binary segmentation dataset
+
+
+    Attributes:
+        from_list(**args): Create dataset from list
+        from_folder(**args): Create dataset from folder path
+    
+    Examples: 
+    
+        dataset = SDataset.from_folder(
+            root='./data',
+            mask_folder_name='masks',
+            image_folder_name='images',
+            test=False,
+        )
+
+        print(len(dataset))
+        print(dataset[0][0].shape)
+        print(dataset[0][1].shape)
+
+    """
 
     def __init__(
         self,
@@ -33,11 +53,12 @@ class SDataset(torch.utils.data.Dataset):
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
+        sample: bool = False,
     ):
         super(SDataset, self).__init__()
 
-        self.list_rgb = rgb_path_ls
-        self.list_mask = mask_path_ls
+        self.list_rgb = rgb_path_ls[:50] if sample else rgb_path_ls
+        self.list_mask = mask_path_ls[:50] if sample else mask_path_ls
         self.train = not (test)
         self.image_size = image_size
         self.img_transform = (
@@ -76,6 +97,15 @@ class SDataset(torch.utils.data.Dataset):
 
     @staticmethod
     def get_images_list(folder_path: Path, extension: str) -> List[str]:
+        """Return file list with specify type from folder
+
+        Args:
+            folder_path (Path): folder path
+            extension (str): file extension
+
+        Returns:
+            List[str]: full path list of items in folder
+        """
         folder_path = str(folder_path)
         return glob(f"{folder_path}/*.{extension}")
 
@@ -88,7 +118,20 @@ class SDataset(torch.utils.data.Dataset):
         m_transform: Optional[List] = None,
         image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
+        sample: bool = False,
     ):
+        """From list method
+
+        Args:
+            rgb_path_ls (Optional[List[str]], optional): full image paths list. Defaults to None.
+            mask_path_ls (Optional[List[str]], optional): full label paths list. Defaults to None.
+            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
+            transform (Optional[List], optional): rgb transform. Defaults to None.
+            m_transform (Optional[List], optional): label transform. Defaults to None.
+            image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224)..
+        Returns:
+            SDataset: dataset class
+        """
         return cls(
             rgb_path_ls=rgb_path_ls,
             mask_path_ls=mask_path_ls,
@@ -96,6 +139,7 @@ class SDataset(torch.utils.data.Dataset):
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
+            sample=sample,
         )
 
     @classmethod
@@ -108,8 +152,24 @@ class SDataset(torch.utils.data.Dataset):
         test: bool = False,
         transform: Optional[List] = None,
         m_transform: Optional[List] = None,
-        image_size: tuple = (224, 224),
+        image_size: Tuple[int, int] = (224, 224),
+        sample: bool = False,
     ):
+        r"""From folder method
+
+        Args:
+            root (str): folder root
+            image_folder_name (str): image folder name
+            mask_folder_name (str): label folder name
+            extension (str, optional): image file type extenstion. Defaults to "png".
+            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
+            transform (Optional[List], optional): rgb transform. Defaults to None.
+            m_transform (Optional[List], optional): label transform. Defaults to None.
+            image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224).
+
+        Returns:
+            SDataset: dataset class
+        """
 
         data_root = Path(root)
         img_folder = data_root / Path(image_folder_name)
@@ -125,31 +185,6 @@ class SDataset(torch.utils.data.Dataset):
             transform=transform,
             m_transform=m_transform,
             image_size=image_size,
+            sample=sample,
         )
-
-
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--data-path", type=str, required=True)
-    parser.add_argument("--img-folder-name", type=str, required=True)
-    parser.add_argument("--msk-folder-name", type=str, required=True)
-    parser.add_argument("--test", action="store_true", default=False)
-    parser.add_argument("--extension", default="png", type=str)
-
-    args = parser.parse_args()
-
-    dataset = SDataset.from_folder(
-        root=args.data_path,
-        test=args.test,
-        mask_folder_name=args.msk_folder_name,
-        image_folder_name=args.img_folder_name,
-        extension=args.extension,
-        image_size=(224, 224),
-    )
-
-    print(len(dataset))
-    print(dataset[0][0].shape)
-    print(dataset[0][1].shape)
 

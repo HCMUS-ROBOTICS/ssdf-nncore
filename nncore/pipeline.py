@@ -8,6 +8,7 @@ from .models import ModelWithLoss
 from .test import evaluate
 
 from torchvision.transforms import transforms as tf
+import yaml
 
 
 class Pipeline(object):
@@ -24,7 +25,7 @@ class Pipeline(object):
         )
 
         self.device = get_instance(self.cfg["device"])
-
+        print(self.device)
         self.transform = [
             tf.ToTensor(),
             tf.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
@@ -58,6 +59,15 @@ class Pipeline(object):
             optimizer=self.optimizer,
         )
 
+        save_cfg = {}
+        save_cfg["opt"] = vars(opt)
+        save_cfg["pipeline"] = self.cfg
+        save_cfg["opt"]["save_dir"] = str(save_cfg["opt"]["save_dir"])
+        with open(
+            self.learner.save_dir / "checkpoints" / "config.yaml", "w"
+        ) as outfile:
+            yaml.dump(save_cfg, outfile, default_flow_style=False)
+
     def sanitycheck(self):
         self.learner.print("Sanity checking before training")
         self.evaluate()
@@ -78,4 +88,3 @@ class Pipeline(object):
         print(f"Loss: {avg_loss}")
         for m in metric.values():
             m.summary()
-

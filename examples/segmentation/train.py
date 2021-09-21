@@ -1,4 +1,7 @@
 import sys
+import matplotlib as mpl
+
+mpl.use("Agg")
 from importlib import import_module
 
 sys.path.insert(0, "../../")

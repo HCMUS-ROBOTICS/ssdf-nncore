@@ -1,11 +1,7 @@
 import torch
 from ..datasets import *
 from ..utils.typing import *
-from ..utils import (
-    get_device,
-    save_model,
-    load_checkpoint,
-)
+from ..utils import *
 from ..test import evaluate
 from ..schedulers import *
 
@@ -14,7 +10,7 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn import Module
 from torch import device
-
+import cv2
 
 from pathlib import Path
 from torch.cuda.amp import GradScaler, autocast
@@ -22,8 +18,26 @@ from torch.cuda.amp import GradScaler, autocast
 from .baselearner import BaseLearner
 from ..metrics import Metric
 
+from torchvision.utils import save_image
+
 
 class SupervisedLearner(BaseLearner):
+    r"""SupervisedLearner class 
+
+    Support training and evaluate strategy for supervise learning 
+    
+    Args:
+        cfg (Any): [description]
+        save_dir (str): save folder directory path
+        train_data (DataLoader): train dataloader
+        val_data (DataLoader): validation dataloader
+        device (torch.device): training device
+        model (Module): model to optimize
+        scheduler (lr_scheduler): learning rate scheduler  
+        optimizer (torch.optim.Optimizer): optimizer 
+        metrics (Dict[str, Metric]): evaluate metrics
+    """
+
     def __init__(
         self,
         cfg: Any,
@@ -58,6 +72,12 @@ class SupervisedLearner(BaseLearner):
 
     def fit(self):
         for epoch in range(self.cfg.nepochs):
+
+            # Note learning rate
+            for i, group in enumerate(self.optimizer.param_groups):
+                self.tsboard.update_lr(i, group["lr"], epoch)
+
+            self.epoch = epoch
             self.print(f"\nEpoch {epoch:>3d}")
             self.print("-----------------------------------")
 
@@ -79,6 +99,7 @@ class SupervisedLearner(BaseLearner):
 
                     self.print("+ Evaluation result")
                     self.print(f"Loss: {avg_loss}")
+
                     for m in self.metric.values():
                         m.summary()
 
@@ -92,7 +113,20 @@ class SupervisedLearner(BaseLearner):
                         self.save_checkpoint(epoch, avg_loss, val_metric)
             self.print("-----------------------------------")
 
-    def save_checkpoint(self, epoch, val_loss, val_metric):
+    def save_checkpoint(
+        self, epoch: int, val_loss: float, val_metric: Dict[str, float]
+    ) -> None:
+
+        r"""Save checkpoint method
+
+        Saving 
+        -   model state dict
+        -   optimizer state dict
+        Args:
+            epoch (int): current epoch
+            val_loss (float): validation loss
+            val_metric (Dict[str, float]): validation metrics result
+        """
         data = {
             "epoch": epoch,
             "model_state_dict": self.model.model.state_dict(),
@@ -103,7 +137,7 @@ class SupervisedLearner(BaseLearner):
             self.print(
                 f"Loss is improved from {self.best_loss: .6f} to {val_loss: .6f}. Saving weights...",
             )
-            save_model(data, self.save_dir / Path("best_loss.pth"))
+            save_model(data, self.save_dir / "checkpoints" / Path("best_loss.pth"))
             # Update best_loss
             self.best_loss = val_loss
         else:
@@ -114,7 +148,9 @@ class SupervisedLearner(BaseLearner):
                 self.print(
                     f"{k} is improved from {self.best_metric[k]: .6f} to {val_metric[k]: .6f}. Saving weights...",
                 )
-                save_model(data, self.save_dir / Path(f"best_metric_{k}.pth"))
+                save_model(
+                    data, self.save_dir / "checkpoints" / Path(f"best_metric_{k}.pth")
+                )
                 self.best_metric[k] = val_metric[k]
             else:
                 self.print(f"{k} is not improved from {self.best_metric[k]:.6f}.")
@@ -129,5 +165,10 @@ class SupervisedLearner(BaseLearner):
             verbose=self.verbose,
         )
         self.metric = metric
-        return avg_loss
 
+        self.tsboard.update_loss("val", avg_loss, epoch)
+
+        for k in self.metric.keys():
+            m = metric[k].value()
+            self.tsboard.update_metric("val", k, m, epoch)
+        return avg_loss

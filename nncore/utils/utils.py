@@ -2,6 +2,7 @@ import torch
 import copy
 from .typing import *
 import yaml
+import matplotlib.pyplot as plt
 
 
 def copy_model(model: Module) -> Module:
@@ -25,7 +26,7 @@ def load_model(
     map_location="cpu",
     key="model_state_dict",
 ):
-    model.load_state_dict(torch.load(path, map_location=map_location))[key]
+    model.load_state_dict(torch.load(path, map_location=map_location)[key])
     if verbose:
         print("Model loaded")
 
@@ -37,3 +38,9 @@ def load_yaml(cfg_path: str):
 def vprint(obj: str, verbose: bool):
     if verbose:
         print(obj)
+
+
+def tensor2plt(obj: Tensor):
+    fig = plt.figure()
+    plt.imshow(obj.permute(1, 2, 0))
+    return fig

@@ -1,4 +1,7 @@
 class Metric:
+    """Abstract metric class
+    """
+
     def __init__(self, *args, **kwargs):
         NotImplemented
 
