@@ -87,13 +87,16 @@ class opts(object):
                 a.update({k: v})
         return a
 
-    def parse(self):
+    def parse_args(self):
         args = vars(self.parser.parse_args())
-        args = (
+        self.args = (
             self.fill(args, self.args)
             if args["config_path"] is None
             else load_yaml(cfg_path=args["config_path"])["opts"]
         )
+
+    def parse(self):
+        args = self.args
         opt = Namespace(**args)
 
         opt.gpus_str = opt.gpus
