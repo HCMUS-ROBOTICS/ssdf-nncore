@@ -11,6 +11,5 @@ from nncore.pipeline import Pipeline
 
 if __name__ == "__main__":
     opt = opts(cfg_path="./config/opt.yaml").parse()
-    print(opt)
-    # train_pipeline = Pipeline(opt)
-    # train_pipeline.fit()
+    train_pipeline = Pipeline(opt)
+    train_pipeline.fit()
