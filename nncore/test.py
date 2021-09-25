@@ -3,7 +3,7 @@ from .utils.typing import *
 
 import torch
 from torch.utils.data.dataloader import DataLoader
-from tqdm import tqdm
+from tqdm.auto import tqdm as tqdm
 
 from torchvision import transforms as tf
 

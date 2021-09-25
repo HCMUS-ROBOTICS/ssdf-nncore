@@ -5,7 +5,8 @@ from ..utils import vprint, AverageValueMeter, detach, move_to
 from ..metrics import Metric
 
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.auto import tqdm as tqdm
+
 import numpy as np
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader

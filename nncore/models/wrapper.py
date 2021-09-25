@@ -7,7 +7,7 @@ from torchvision.transforms import transforms as tf
 from ..datasets.default_datasets import TestImageDataset
 from ..utils import *
 
-from tqdm import tqdm
+from tqdm.auto import tqdm as tqdm
 
 
 class ModelWithLoss(torch.nn.Module):
