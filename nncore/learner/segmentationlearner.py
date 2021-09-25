@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 from torch.nn import Module
 from torch import device
 
-
+# from ..utils.cityscapes import cityscapes_map
 from .supervisedlearner import SupervisedLearner
 from ..metrics import Metric
 
@@ -56,16 +56,18 @@ class SegmentationLearner(SupervisedLearner):
 
     def save_result(self, pred, batch, input_key="input", label_key="mask"):
         save_dir = self.save_dir / "samples"
-
+        pred = pred["out"] if isinstance(pred, Dict) else pred
+        # in torchvision models, pred is a dict[key=out, value=Tensor]
         images = batch[input_key]
-        mask = batch[label_key].unsqueeze(1)
-        pred = multi_class_prediction(pred).unsqueeze(1)
+        mask = batch[label_key].unsqueeze(1) / 255.0
+        pred = multi_class_prediction(pred).unsqueeze(1) / 255.0
+        # pred = [cityscapes_map[p] for p in pred]
         outs = image_batch_show(pred)
         rgbs = image_batch_show(images)
         lbls = image_batch_show(mask)
         save_image(rgbs, str(save_dir / "last_batch_inputs.png"), normalize=True)
-        save_image(lbls, str(save_dir / "last_batch_labels.png"))
-        save_image(outs, str(save_dir / "last_batch_preds.png"))
+        save_image(lbls, str(save_dir / "last_batch_labels.png"), normalize=True)
+        save_image(outs, str(save_dir / "last_batch_preds.png"), normalize=True)
 
         rbgs_plt = tensor2plt(rgbs)
         lbls_plt = tensor2plt(lbls)
