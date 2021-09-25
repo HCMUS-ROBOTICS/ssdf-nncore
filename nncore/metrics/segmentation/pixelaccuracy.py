@@ -24,7 +24,11 @@ class PixelAccuracy(Metric):
         self.reset()
 
     def update(self, output: Tensor, batch: Dict[str, Any]):
-        target = batch["mask"]
+
+        output = output["out"] if isinstance(output, Dict) else output
+        # in torchvision models, pred is a dict[key=out, value=Tensor]
+        target = batch["mask"] if isinstance(batch, Dict) else batch
+
         prediction = torch.argmax(output, dim=1)
         image_size = target.size(1) * target.size(2)
 
