@@ -1,31 +1,26 @@
-import torch
-from ..datasets import *
-from ..utils.typing import *
-from ..utils import *
-from ..test import evaluate
-from ..schedulers import *
+from pathlib import Path
 
-import numpy as np
+import torch
+from torch import device
+from torch.cuda.amp import GradScaler, autocast
+from torch.nn import Module
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from torch.nn import Module
-from torch import device
-import cv2
 
-from pathlib import Path
-from torch.cuda.amp import GradScaler, autocast
-
-from .baselearner import BaseLearner
+from ..datasets import *
 from ..metrics import Metric
-
-from torchvision.utils import save_image
+from ..schedulers import *
+from ..test import evaluate
+from ..utils import *
+from ..utils.typing import *
+from .baselearner import BaseLearner
 
 
 class SupervisedLearner(BaseLearner):
     r"""SupervisedLearner class 
 
     Support training and evaluate strategy for supervise learning 
-    
+
     Args:
         cfg (Any): [description]
         save_dir (str): save folder directory path
@@ -116,7 +111,6 @@ class SupervisedLearner(BaseLearner):
     def save_checkpoint(
         self, epoch: int, val_loss: float, val_metric: Dict[str, float]
     ) -> None:
-
         r"""Save checkpoint method
 
         Saving 
