@@ -1,9 +1,6 @@
 <div align="center">
 
-
-
 **Collection of tasks for fast baseline solving in self-driving problems with deep learning. The offical language support is Pytorch** 
-
 
 ---
 
@@ -17,7 +14,6 @@
   <a href="#license">License</a>
 </p>
 
-
 </div>
 
 ---
@@ -25,7 +21,6 @@
 __Note:__ This pkg is currently in development. Please [open an issue](https://github.com/HCMUS-ROBOTICS/ssdf-nncore/issues/new/choose) if you find anything that isn't working as expected.
 
 ---
-
 
 ## Installation
 
@@ -40,17 +35,19 @@ non-support yet
 
 To install **nncore** and develop locally
 
-```
+```bash
 git clone https://github.com/HCMUS-ROBOTICS/ssdf-nncore nncore 
 cd nncore/nn
 pip install -r requirements.txt
 ```
+
 See [Installation]() for more options.
 </details>
 
 ---
 
 ## What is NNcore
+
 NNcore is a deep learning framework focusing on solving autonomous-driving problems.
 
 - Task-based training and export for multiple framework
@@ -92,10 +89,9 @@ if __name__ == "__main__":
 
 ### Training
 
-
 <details>
   <summary>training configs</summary>
-cfg/opt.yaml 
+cfg/opt.yaml
 
 ```yaml
 
@@ -126,9 +122,9 @@ opts:
 
 ```
 
-pipeline.yaml 
+pipeline.yaml
 
-```yaml 
+```yaml
 
 learner:
   name: # learner name
@@ -188,10 +184,9 @@ data:
 
 ```
 
-
 </details>
 
-train.py 
+train.py
 
 ```python
 
@@ -237,19 +232,30 @@ this repo
 |    train.py
 |    test.py
 ```
+
 more information [here](examples/segmentation)
+
+## Export to ONNX
+
+Use the script provided in `examples`, then run below command
+
+```bash
+PYTHONPATH=.. python3 torch2onnx.py <checkpoint> --in_shape 1 3 224 224 --inputs input --outputs output
+```
 
 ## A general task
 
 Nothing here yet
+
 ## Customizable
 
 Nothing here yet
+
 ## Visualization
 
-Predictions from vision tasks can be visualized through an [Tensorboard](), allowing you to better understand and analyze how your model is performing.
+Predictions from vision tasks can be visualized through an [Tensorboard](https://www.tensorflow.org/tensorboard), allowing you to better understand and analyze how your model is performing.
 
-## References 
+## References
 
 Nothing here yet
 
