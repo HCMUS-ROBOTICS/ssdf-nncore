@@ -54,7 +54,9 @@ class SegmentationLearner(SupervisedLearner):
             device=device,
         )
 
-    def save_result(self, pred, batch, input_key="input", label_key="mask"):
+    def save_result(self, pred, batch, stage: str):
+        input_key="input"
+        label_key="mask"
         save_dir = self.save_dir / "samples"
         pred = pred["out"] if isinstance(pred, Dict) else pred
         # in torchvision models, pred is a dict[key=out, value=Tensor]
