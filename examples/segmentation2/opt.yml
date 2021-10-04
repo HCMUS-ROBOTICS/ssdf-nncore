@@ -21,4 +21,4 @@ opts:
   save_dir: ./runs
   verbose: True
   seed: 123
-  cfg_pipeline: ./config/pipeline.yaml
+  cfg_pipeline: ./pipeline.yml

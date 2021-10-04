@@ -34,7 +34,7 @@ data:
       constructor: from_folder
       args:
         sample: True
-        root: ./data
+        root: ../../data
         test: True
         mask_folder_name: CameraSeg
         image_folder_name: CameraRGB
@@ -43,12 +43,12 @@ data:
       train:
         name: DataLoader
         args:
-          batch_size: 16
+          batch_size: 2
           shuffle: True
           drop_last: True
       val:
         name: DataLoader
         args:
-          batch_size: 16
+          batch_size: 2
           shuffle: False
           drop_last: False
