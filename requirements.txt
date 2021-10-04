@@ -3,3 +3,4 @@ pytorch
 tensorboard 
 albumentations
 torchvision
+requests 
