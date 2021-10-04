@@ -40,7 +40,9 @@ def vprint(obj: str, verbose: bool):
         print(obj)
 
 
-def tensor2plt(obj: Tensor):
+
+def tensor2plt(obj: Tensor, title: List[Any]):
     fig = plt.figure()
     plt.imshow(obj.permute(1, 2, 0))
+    plt.title(title)
     return fig
