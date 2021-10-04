@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from nncore.utils.typing import *
-from nncore.utils.segmentation import OneHotEncoding
 
 
 class LyftDataset(torch.utils.data.Dataset):
@@ -31,8 +30,8 @@ class LyftDataset(torch.utils.data.Dataset):
         )
 
         print(len(dataset))
-        print(dataset[0][0].shape)
-        print(dataset[0][1].shape)
+        print(dataset[0]['input'].shape)
+        print(dataset[0]['mask'].shape)
 
     """
 
@@ -48,8 +47,8 @@ class LyftDataset(torch.utils.data.Dataset):
     ):
         super(LyftDataset, self).__init__()
 
-        self.list_rgb = rgb_path_ls[:50] if sample else rgb_path_ls
-        self.list_mask = mask_path_ls[:50] if sample else mask_path_ls
+        self.list_rgb = rgb_path_ls[:4] if sample else rgb_path_ls
+        self.list_mask = mask_path_ls[:4] if sample else mask_path_ls
         self.train = not (test)
         self.image_size = image_size
         self.transform = A.Compose(
@@ -59,7 +58,6 @@ class LyftDataset(torch.utils.data.Dataset):
                 ToTensorV2(p=1.0),
             ]
         )
-        self.label_encoder = OneHotEncoding(n_classes=14)
         assert len(self.list_rgb) == len(
             self.list_mask
         ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
