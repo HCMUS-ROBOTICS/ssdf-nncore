@@ -14,12 +14,12 @@ def binary_prediction(output: Tensor, thresh: float = 0.5) -> Tensor:
 
 def np2cmap(np_image):
     """
-    input: numpy batch B x H x W
-    output: color map batch  B x C x H x W
+    input: numpy batch H x W x B 
+    output: color map batch  H x W x C x B
     """
     cmap = color_map()[:, np.newaxis, :]
+    np_image = np_image[..., np.newaxis]
     new_im = np.dot(np_image == 0, cmap[0])
-    cmap = color_map()[:, np.newaxis, :]
     for i in range(1, cmap.shape[0]):
         new_im += np.dot(np_image == i, cmap[i])
     return new_im
@@ -31,4 +31,4 @@ def tensor2cmap(tensor):
     output: color map batch  B x C x H x W
     """
     np_image = tensor.permute(1, 2, 0).cpu().numpy()
-    return torch.tensor(np2cmap(np_image).transpose(2, 0, 1))
+    return torch.tensor(np2cmap(np_image)).permute(2, 3, 0, 1)
