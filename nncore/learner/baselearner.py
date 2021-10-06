@@ -5,7 +5,8 @@ from ..utils import vprint, AverageValueMeter, detach, move_to
 from ..metrics import Metric
 
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.auto import tqdm as tqdm
+
 import numpy as np
 from torch.cuda.amp import GradScaler, autocast
 from torch.utils.data import DataLoader
@@ -113,14 +114,14 @@ class BaseLearner:
                 batch = detach(batch)
                 for m in self.metric.values():
                     m.update(outs, batch)
-        self.save_result(outs, batch)
+        self.save_result(outs, batch, stage="train")
         avg_loss = total_loss.value()[0]
         return avg_loss
 
     def save_checkpoints():
         raise NotImplementedError
 
-    def save_result(self, pred, batch):
+    def save_result(self, pred, batch, stage:str ):
         NotImplemented
 
     def print(self, obj):

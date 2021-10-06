@@ -1,12 +1,12 @@
 <div align="center">
 
-**Collection of tasks for fast baseline solving in self-driving problems with deep learning. The offical language support is Pytorch** 
+**Collection of tasks for fast baseline solving in self-driving problems with deep learning. The offical language support is Pytorch**
 
 ---
 
 <p align="center">
   <a href="#installation">Installation</a> •
-  <a href="#what-is-flash">About</a> •
+  <a href="#what-is-nncore">About</a> •
   <a href="#inference">Prediction</a> •
   <a href="#training">Training</a> •
   <a href="#tasks">Tasks</a> •
@@ -18,7 +18,7 @@
 
 ---
 
-__Note:__ This pkg is currently in development. Please [open an issue](https://github.com/HCMUS-ROBOTICS/ssdf-nncore/issues/new/choose) if you find anything that isn't working as expected.
+**Note:** This pkg is currently in development. Please [open an issue](https://github.com/HCMUS-ROBOTICS/ssdf-nncore/issues/new/choose) if you find anything that isn't working as expected.
 
 ---
 
@@ -36,12 +36,13 @@ non-support yet
 To install **nncore** and develop locally
 
 ```bash
-git clone https://github.com/HCMUS-ROBOTICS/ssdf-nncore nncore 
+git clone https://github.com/HCMUS-ROBOTICS/ssdf-nncore nncore
 cd nncore/nn
 pip install -r requirements.txt
 ```
 
 See [Installation]() for more options.
+
 </details>
 
 ---
@@ -94,7 +95,6 @@ if __name__ == "__main__":
 cfg/opt.yaml
 
 ```yaml
-
 opts:
   pretrained: null # untested yet
   id: default
@@ -115,17 +115,15 @@ opts:
 
   num_iters: -1 # unsupport yet
   save_dir: # save directory (sample images, checkpoints, cfg)
-  verbose: # if verbose is False, no console logging during training 
+  verbose: # if verbose is False, no console logging during training
   seed: # fixed random seed
-  cfg_pipeline:  # path to pipeline.yaml
-
+  cfg_pipeline: # path to pipeline.yaml
 
 ```
 
 pipeline.yaml
 
 ```yaml
-
 learner:
   name: # learner name
   args:
@@ -150,29 +148,29 @@ scheduler:
 data:
   # optional, if train and val is not Null, pipeline will use your dataset directly
   train: # dataset name
-    name:                   
+    name:
     args:
     loader:
       name: DataLoader
       args:
-        batch_size:     16
-        shuffle:        True
-        drop_last:      True 
-  val: 
-    name: # dataset name                   
+        batch_size: 16
+        shuffle: True
+        drop_last: True
+  val:
+    name: # dataset name
     args:
     loader:
       name: DataLoader
       args:
-        batch_size:     16
-        shuffle:        True
-        drop_last:      False
+        batch_size: 16
+        shuffle: True
+        drop_last: False
   # optional, if trainval is not Null, train and val is Null, pipeline will split your dataset
-  trainval: 
+  trainval:
     test_ratio: 0.2
     dataset:
       name: #dataset name
-      constructor: # constructor name if default is not init 
+      constructor: # constructor name if default is not init
       args:
     loader:
       train:
@@ -181,7 +179,6 @@ data:
       val:
         name: # val data loader
         args:
-
 ```
 
 </details>

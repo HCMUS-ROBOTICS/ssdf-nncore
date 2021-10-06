@@ -151,12 +151,13 @@ class SupervisedLearner(BaseLearner):
 
     @torch.no_grad()
     def evaluate(self, epoch, dataloader):
-        avg_loss, metric = evaluate(
+        last_batch_pred, avg_loss, metric = evaluate(
             model=self.model,
             dataloader=dataloader,
             metric=self.metric,
             device=self.device,
             verbose=self.verbose,
+            return_last_batch=True,
         )
         self.metric = metric
 
@@ -165,4 +166,8 @@ class SupervisedLearner(BaseLearner):
         for k in self.metric.keys():
             m = metric[k].value()
             self.tsboard.update_metric("val", k, m, epoch)
+
+        outs, batch = last_batch_pred
+        self.save_result(outs, batch, stage="val")
+
         return avg_loss

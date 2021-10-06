@@ -1,14 +1,16 @@
+from numpy import tile
 from ..datasets import *
 from ..utils.typing import *
 from ..utils import *
 from ..schedulers import *
+from ..utils.utils import inverse_normalize_batch
 
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 from torch.nn import Module
 from torch import device
 
-
+# from ..utils.cityscapes import cityscapes_map
 from .supervisedlearner import SupervisedLearner
 from ..metrics import Metric
 
@@ -54,24 +56,36 @@ class SegmentationLearner(SupervisedLearner):
             device=device,
         )
 
-    def save_result(self, pred, batch, input_key="input", label_key="mask"):
+    def save_result(self, pred, batch, stage: str):
+        input_key = "input"
+        label_key = "mask"
         save_dir = self.save_dir / "samples"
+        pred = pred["out"] if isinstance(pred, Dict) else pred  # B x N_CLS x W x H
 
-        images = batch[input_key]
-        mask = batch[label_key].unsqueeze(1)
-        pred = multi_class_prediction(pred).unsqueeze(1)
-        outs = image_batch_show(pred)
-        rgbs = image_batch_show(images)
-        lbls = image_batch_show(mask)
-        save_image(rgbs, str(save_dir / "last_batch_inputs.png"), normalize=True)
+        images = batch[input_key]  # B x C x W x H
+        mask = batch[label_key]  # B x W x H
+        pred = multi_class_prediction(pred)  # From B x N_CLS x W x H -> B x W x H
+
+        images = inverse_normalize_batch(images)
+
+        mask = tensor2cmap(mask)
+        pred = tensor2cmap(pred)
+
+        rgbs = image_batch_show(images, normalize=True)
+        lbls = image_batch_show(mask, normalize=False)
+        outs = image_batch_show(pred, normalize=False)
+
+        save_image(rgbs, str(save_dir / "last_batch_inputs.png"))
         save_image(lbls, str(save_dir / "last_batch_labels.png"))
         save_image(outs, str(save_dir / "last_batch_preds.png"))
 
-        rbgs_plt = tensor2plt(rgbs)
-        lbls_plt = tensor2plt(lbls)
-        outs_plt = tensor2plt(outs)
+        rbgs_plt = tensor2plt(rgbs, title="inputs")
+        lbls_plt = tensor2plt(lbls.long(), title="labels")
+        outs_plt = tensor2plt(outs.long(), title="predictions")
 
         self.tsboard.update_figure(
-            f"samples/last_batch ", [rbgs_plt, lbls_plt, outs_plt], step=self.epoch
+            f"{stage}/samples/last_batch ",
+            [rbgs_plt, lbls_plt, outs_plt],
+            step=self.epoch,
         )
 
