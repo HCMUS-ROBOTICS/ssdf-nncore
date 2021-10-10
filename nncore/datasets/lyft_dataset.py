@@ -10,8 +10,7 @@ from albumentations.pytorch.transforms import ToTensorV2
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-from ..utils.registry import DATASET_REGISTRY
+from . import DATASET_REGISTRY
 
 
 @DATASET_REGISTRY.register()

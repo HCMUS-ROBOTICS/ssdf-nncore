@@ -1,6 +1,5 @@
 from pathlib import Path
 import torch
-from nncore.datasets import LyftDataset
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from nncore.utils.utils import inverse_normalize_batch
@@ -11,7 +10,7 @@ from nncore.utils.logger import image_batch_show
 from nncore.utils.segmentation import tensor2cmap
 from torchvision.utils import save_image
 
-from nncore.utils.registry import DATASET_REGISTRY
+from nncore.datasets import DATASET_REGISTRY
 
 # from
 # create a pytorch transform

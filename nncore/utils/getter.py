@@ -2,6 +2,8 @@ from torch.optim import SGD, Adam, RMSprop
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
 from torch.utils.data import DataLoader, random_split
 
+from nncore.datasets import DATASET_REGISTRY
+
 from ..models.wrapper import ModelMixin
 from ..metrics import *
 from ..externals import *
@@ -51,7 +53,7 @@ def get_data(cfg, return_dataset=False):
         trainval_cfg = cfg["trainval"]
         # Split dataset train:val = ratio:(1-ratio)
         ratio = trainval_cfg["test_ratio"]
-        dataset = get_instance(trainval_cfg["dataset"])
+        dataset = get_instance(trainval_cfg["dataset"], registry=DATASET_REGISTRY)
         train_sz, val_sz = get_dataset_size(ratio=ratio, dataset_sz=len(dataset))
         train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
         # Get dataloader

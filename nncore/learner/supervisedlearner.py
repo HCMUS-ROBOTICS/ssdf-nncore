@@ -8,7 +8,6 @@ from torch.nn import Module
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
-from ..datasets import *
 from ..metrics import Metric
 from ..schedulers import *
 from ..test import evaluate

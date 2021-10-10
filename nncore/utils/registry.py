@@ -80,7 +80,6 @@ class Registry(Iterable[Tuple[str, Any]]):
     __str__ = __repr__
 
 
-DATASET_REGISTRY = Registry('DATASET')
 CRITERION_REGISTRY = Registry('CRITERION')
 MODEL_REGISTRY = Registry('MODEL')
 LEARNER_REGISTRY = Registry('LEARNER')
