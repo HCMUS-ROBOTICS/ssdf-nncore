@@ -1,5 +1,7 @@
 
+import matplotlib as mpl
 
+mpl.use("Agg")
 from nncore.opt import opts
 from nncore.pipeline import Pipeline
 

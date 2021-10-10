@@ -1,5 +1,5 @@
 import torch
-from .typing import *
+from typing import Any
 
 
 def get_device() -> torch.device:

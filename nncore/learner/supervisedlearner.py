@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import torch
@@ -12,7 +13,6 @@ from ..metrics import Metric
 from ..schedulers import *
 from ..test import evaluate
 from ..utils import *
-from ..utils.typing import *
 from .baselearner import BaseLearner
 
 
@@ -40,7 +40,7 @@ class SupervisedLearner(BaseLearner):
         val_data: DataLoader,
         metrics: Dict[str, Metric],
         model: Module,
-        scheduler: lr_scheduler,
+        scheduler,
         optimizer: Optimizer,
         device: device = get_device(),
     ):
@@ -73,16 +73,16 @@ class SupervisedLearner(BaseLearner):
                 self.tsboard.update_lr(i, group["lr"], epoch)
 
             self.epoch = epoch
-            self.print(f"\nEpoch {epoch:>3d}")
-            self.print("-----------------------------------")
+            logging.info(f"\nEpoch {epoch:>3d}")
+            logging.info("-----------------------------------")
 
             # 1: Training phase
             # 1.1 train
             avg_loss = self.train_epoch(epoch=epoch, dataloader=self.train_data)
 
             # 1.2 log result
-            self.print("+ Training result")
-            self.print(f"Loss: {avg_loss}")
+            logging.info("+ Training result")
+            logging.info(f"Loss: {avg_loss}")
             for m in self.metric.values():
                 m.summary()
 
@@ -92,8 +92,8 @@ class SupervisedLearner(BaseLearner):
                     # 2: Evaluating model
                     avg_loss = self.evaluate(epoch, dataloader=self.val_data)
 
-                    self.print("+ Evaluation result")
-                    self.print(f"Loss: {avg_loss}")
+                    logging.info("+ Evaluation result")
+                    logging.info(f"Loss: {avg_loss}")
 
                     for m in self.metric.values():
                         m.summary()
@@ -106,7 +106,7 @@ class SupervisedLearner(BaseLearner):
                         # Get latest val loss here
                         val_metric = {k: m.value() for k, m in self.metric.items()}
                         self.save_checkpoint(epoch, avg_loss, val_metric)
-            self.print("-----------------------------------")
+            logging.info("-----------------------------------")
 
     def save_checkpoint(
         self, epoch: int, val_loss: float, val_metric: Dict[str, float]
@@ -128,18 +128,18 @@ class SupervisedLearner(BaseLearner):
         }
 
         if val_loss < self.best_loss:
-            self.print(
+            logging.info(
                 f"Loss is improved from {self.best_loss: .6f} to {val_loss: .6f}. Saving weights...",
             )
             save_model(data, self.save_dir / "checkpoints" / Path("best_loss.pth"))
             # Update best_loss
             self.best_loss = val_loss
         else:
-            self.print(f"Loss is not improved from {self.best_loss:.6f}.")
+            logging.info(f"Loss is not improved from {self.best_loss:.6f}.")
 
         for k in self.metric.keys():
             if val_metric[k] > self.best_metric[k]:
-                self.print(
+                logging.info(
                     f"{k} is improved from {self.best_metric[k]: .6f} to {val_metric[k]: .6f}. Saving weights...",
                 )
                 save_model(
@@ -147,7 +147,7 @@ class SupervisedLearner(BaseLearner):
                 )
                 self.best_metric[k] = val_metric[k]
             else:
-                self.print(f"{k} is not improved from {self.best_metric[k]:.6f}.")
+                logging.info(f"{k} is not improved from {self.best_metric[k]:.6f}.")
 
     @torch.no_grad()
     def evaluate(self, epoch, dataloader):

@@ -1,10 +1,9 @@
-from torchvision import transforms
-from ..utils.typing import *
 from pathlib import Path
-
-from PIL import Image
+from typing import List
 
 import torch
+from PIL import Image
+from torchvision import transforms
 
 
 def available(path: str):

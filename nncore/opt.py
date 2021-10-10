@@ -1,12 +1,10 @@
-from .utils.typing import *
-from .utils import load_yaml
-
 import argparse
 from argparse import Namespace
-from pathlib import Path
-
-
 from datetime import datetime
+from pathlib import Path
+from typing import Dict
+
+from .utils import load_yaml
 
 
 class opts(object):

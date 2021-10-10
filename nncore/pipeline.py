@@ -1,14 +1,16 @@
-from .opt import opts
+import logging
+from typing import Optional
 
-from .utils.getter import get_instance, get_data
-from .utils.typing import *
-from .utils import load_yaml
-
-from .models import ModelWithLoss
-from .test import evaluate
-
-from torchvision.transforms import transforms as tf
 import yaml
+from torchvision.transforms import transforms as tf
+
+from nncore.models.wrapper import ModelMixin
+from nncore.utils.registry import MODEL_REGISTRY
+
+from .opt import opts
+from .test import evaluate
+from .utils import load_yaml
+from .utils.getter import get_data, get_instance
 
 
 class Pipeline(object):
@@ -34,11 +36,16 @@ class Pipeline(object):
         self.train_dataloader, self.val_dataloader = get_data(
             self.cfg["data"], return_dataset=False
         )
-        model = get_instance(self.cfg["model"]).to(self.device)
+        # model: core-model + loss function
+        ## train: loss + predicts
+        ## eval: loss + predicts
+        # detectron2: model: build_backbone (registry) + build_heads + build_loss
 
-        criterion = get_instance(self.cfg["criterion"]).to(self.device)
+        # self.model = ModelMixin(model, criterion)
 
-        self.model = ModelWithLoss(model, criterion).to(self.device)
+        # model = get_instance(self.cfg["model"]).to(self.device)
+        # criterion = get_instance(self.cfg["criterion"]).to(self.device)
+        self.model = get_instance(self.cfg["model"], getter=get_instance).to(self.device)
 
         self.metric = {mcfg["name"]: get_instance(mcfg) for mcfg in self.cfg["metric"]}
 
@@ -67,9 +74,10 @@ class Pipeline(object):
             self.learner.save_dir / "checkpoints" / "config.yaml", "w"
         ) as outfile:
             yaml.dump(save_cfg, outfile, default_flow_style=False)
+        self.logger = logging.getLogger()
 
     def sanitycheck(self):
-        self.learner.print("Sanity checking before training")
+        self.logger.info("Sanity checking before training")
         self.evaluate()
 
     def fit(self):

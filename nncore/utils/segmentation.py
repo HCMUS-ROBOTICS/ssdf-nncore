@@ -1,14 +1,13 @@
 import torch
-from .typing import *
 import numpy as np
 from .color import color_map
 
 
-def multi_class_prediction(output: Tensor) -> Tensor:
+def multi_class_prediction(output: torch.Tensor) -> torch.Tensor:
     return torch.argmax(output, dim=1)
 
 
-def binary_prediction(output: Tensor, thresh: float = 0.5) -> Tensor:
+def binary_prediction(output: torch.Tensor, thresh: float = 0.5) -> torch.Tensor:
     return (output.squeeze(1) > thresh).long()
 
 

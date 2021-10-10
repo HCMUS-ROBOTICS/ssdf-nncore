@@ -1,6 +1,4 @@
-from numpy import tile
 from ..datasets import *
-from ..utils.typing import *
 from ..utils import *
 from ..schedulers import *
 from ..utils.utils import inverse_normalize_batch
@@ -41,7 +39,7 @@ class SegmentationLearner(SupervisedLearner):
         val_data: DataLoader,
         metrics: Dict[str, Metric],
         model: Module,
-        scheduler: lr_scheduler,
+        scheduler,
         optimizer: Optimizer,
         device: device = get_device(),
     ):
@@ -84,7 +82,7 @@ class SegmentationLearner(SupervisedLearner):
         outs_plt = tensor2plt(outs.long(), title="predictions")
 
         self.tsboard.update_figure(
-            f"{stage}/samples/last_batch ",
+            f"{stage}/samples/last_batch",
             [rbgs_plt, lbls_plt, outs_plt],
             step=self.epoch,
         )

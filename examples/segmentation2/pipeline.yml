@@ -5,13 +5,17 @@ device:
   name: get_device
   args:
 model:
-  name: deeplabv3_resnet50
+  name: ModelMixin
+  constructor: from_cfg
   args:
-    pretrained: False
-    num_classes: 14
-criterion:
-  name: CEwithstat
-  args:
+    model:
+      name: deeplabv3_resnet50
+      args:
+        pretrained: False
+        num_classes: 14
+    criterion:
+      name: CEwithstat
+      args:
 optimizer:
   name: Adam
   args:
@@ -30,11 +34,10 @@ data:
   trainval:
     test_ratio: 0.2
     dataset:
-      name: LyftDataset
-      constructor: from_folder
+      name: LyftDataset.from_folder
       args:
         sample: True
-        root: ../../data
+        root: '.'
         test: True
         mask_folder_name: CameraSeg
         image_folder_name: CameraRGB

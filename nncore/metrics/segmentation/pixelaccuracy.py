@@ -1,7 +1,8 @@
-import torch
-from ..metric_template import Metric
+from typing import Any, Dict, Optional
 
-from ...utils.typing import *
+import torch
+
+from ..metric_template import Metric
 
 
 class PixelAccuracy(Metric):
@@ -23,7 +24,7 @@ class PixelAccuracy(Metric):
         self.ignore_index = ignore_index
         self.reset()
 
-    def update(self, output: Tensor, batch: Dict[str, Any]):
+    def update(self, output: torch.Tensor, batch: Dict[str, Any]):
 
         output = output["out"] if isinstance(output, Dict) else output
         # in torchvision models, pred is a dict[key=out, value=Tensor]

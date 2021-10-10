@@ -1,9 +1,7 @@
 from typing import Dict
-from torch.functional import Tensor
-from torch.nn import functional as F
 
 from torch import nn
-import torch
+from torch.nn import functional as F
 
 
 class CEwithstat(nn.Module):

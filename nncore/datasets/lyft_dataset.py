@@ -1,5 +1,7 @@
 from pathlib import Path
+from typing import List, Optional, Tuple
 import torch
+from torch import Tensor
 from glob import glob
 
 # from torchvision import transforms as tf
@@ -9,9 +11,10 @@ from albumentations.pytorch.transforms import ToTensorV2
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nncore.utils.typing import *
+from ..utils.registry import DATASET_REGISTRY
 
 
+@DATASET_REGISTRY.register()
 class LyftDataset(torch.utils.data.Dataset):
     r"""LyftDataset multi-classes segmentation dataset
 
@@ -176,3 +179,4 @@ class LyftDataset(torch.utils.data.Dataset):
             sample=sample,
         )
 
+DATASET_REGISTRY._do_register('LyftDataset.from_folder', LyftDataset.from_folder)

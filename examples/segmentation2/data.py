@@ -11,12 +11,14 @@ from nncore.utils.logger import image_batch_show
 from nncore.utils.segmentation import tensor2cmap
 from torchvision.utils import save_image
 
+from nncore.utils.registry import DATASET_REGISTRY
+
 # from
 # create a pytorch transform
 transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
 if __name__ == "__main__":
-    dataset = LyftDataset.from_folder(
-        root="../../data",
+    dataset = DATASET_REGISTRY.get('LyftDataset.from_folder')(
+        root=".",
         mask_folder_name="CameraSeg",
         image_folder_name="CameraRGB",
         test=False,

@@ -1,10 +1,10 @@
-from pathlib import Path
-import torch
 from glob import glob
+from pathlib import Path
+from typing import List, Optional, Tuple
+
+import torch
 from PIL import Image
 from torchvision import transforms as tf
-
-from ..utils.typing import *
 
 __all__ = ["SDataset"]
 
@@ -77,7 +77,7 @@ class SDataset(torch.utils.data.Dataset):
         ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
         # self.list_depth = get_images_list(self.img_folder, self.extension)
 
-    def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
 
         im, mask = Image.open(self.list_rgb[idx]), Image.open(self.list_mask[idx])
 

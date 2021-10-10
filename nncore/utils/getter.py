@@ -2,28 +2,24 @@ from torch.optim import SGD, Adam, RMSprop
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
 from torch.utils.data import DataLoader, random_split
 
-from ..datasets import *
-from ..models import *
+from ..models.wrapper import ModelMixin
 from ..metrics import *
 from ..externals import *
 from ..utils import *
 from ..learner import *
 
 
-def get_instance(config, **kwargs):
+def get_instance(config, registry=None, **kwargs):
     # ref https://github.com/vltanh/torchan/blob/master/torchan/utils/getter.py
     assert "name" in config
     config.setdefault("args", {})
     if config.get("args", None) is None:
         config["args"] = {}
-    if config.get("constructor", None) is None:
-        return globals()[config["name"]](**config["args"], **kwargs)
-    return dispatch(config["name"], config["constructor"])(**config["args"], **kwargs)
 
+    if registry:
+        return registry.get(config['name'])(**config['args'], **kwargs)
 
-def dispatch(class_name: str, method_name: str):
-    # ref https://stackoverflow.com/questions/43908656/how-to-invoke-a-python-static-method-inside-class-via-string-method-name
-    return getattr(globals()[class_name], method_name)
+    return globals()[config["name"]](**config["args"], **kwargs)
 
 
 def get_function(name):
@@ -40,7 +36,7 @@ def get_dataloader(cfg, dataset):
 
 
 def get_single_data(cfg, return_dataset=True):
-    dataset = get_instance(cfg)
+    dataset = get_instance(cfg, registry=DATASET_REGISTRY)
     dataloader = get_dataloader(cfg["loader"], dataset)
     return dataloader, dataset if return_dataset else dataloader
 

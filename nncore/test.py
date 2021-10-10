@@ -1,12 +1,10 @@
-from .utils import move_to, AverageValueMeter, detach
-from .utils.typing import *
-
 import torch
+from torch.nn import Module
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
 
-
 from .metrics.metric_template import Metric
+from .utils import AverageValueMeter, detach, move_to
 
 
 @torch.no_grad()
@@ -28,15 +26,15 @@ def evaluate(
         batch = move_to(batch, device)
 
         # 2: Calculate the loss
-        outs, loss, loss_dict = model(batch)
+        out_dict = model(batch)
         # 3: Update loss
-        running_loss.add(loss.item())
+        running_loss.add(out_dict['loss'].item())
         # 4: detach from gpu
-        outs = detach(outs)
+        outs = detach(out_dict)
         batch = detach(batch)
         # 5: Update metric
         for m in metric.values():
-            m.update(outs, batch)
+            m.update(outs['out'], batch)
     avg_loss = running_loss.value()[0]
     if return_last_batch:
         last_batch_pred = outs, batch
