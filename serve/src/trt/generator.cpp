@@ -407,7 +407,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
   auto hasQDQLayers = [](const nvinfer1::INetworkDefinition& network) {
     // Determine if our network has QDQ layers.
     const auto nb_layers = network.getNbLayers();
-    for (int32_t i = 0; i < nb_layers; i++) {
+    for (int32_t i = 0; i < nb_layers; ++i) {
       const auto& layer = network.getLayer(i);
       if (layer->getType() == nvinfer1::LayerType::kQUANTIZE ||
           layer->getType() == nvinfer1::LayerType::kDEQUANTIZE) {
@@ -481,7 +481,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
       }
     }
     config->setInt8Calibrator(
-        new RndInt8Calibrator(1, build_.calibration, *logger_, *network, &elem_count));
+        new RndInt8Calibrator(1, build_.calibration, logger_, *network, &elem_count));
   }
 
   if (build_.safe) {

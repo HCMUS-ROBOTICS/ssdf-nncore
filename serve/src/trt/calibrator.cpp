@@ -9,7 +9,7 @@
 
 namespace ssdf::serve::trt {
 RndInt8Calibrator::RndInt8Calibrator(int batches, const std::filesystem::path& cache_file,
-                                     const ILogger& logger,
+                                     const std::shared_ptr<ILogger>& logger,
                                      const nvinfer1::INetworkDefinition& network,
                                      std::vector<int64_t>* elem_count)
     : batches_(batches), current_batch_(0), cache_file_(cache_file), logger_(logger) {
@@ -22,23 +22,23 @@ RndInt8Calibrator::RndInt8Calibrator(int batches, const std::filesystem::path& c
   std::uniform_real_distribution<float> distribution(-1.0F, 1.0F);
   auto gen = [&generator, &distribution]() { return distribution(generator); };
 
-  for (int i = 0; i < network.getNbInputs(); i++) {
+  for (int i = 0; i < network.getNbInputs(); ++i) {
     auto* input = network.getInput(i);
     std::vector<float> rnd_data(elem_count->at(i));
     std::generate_n(rnd_data.begin(), elem_count->at(i), gen);
 
     void* data;
-    cudaCheck(cudaMalloc(&data, elem_count->at(i) * sizeof(float)), logger_);
+    cudaCheck(cudaMalloc(&data, elem_count->at(i) * sizeof(float)), *logger_);
     cudaCheck(cudaMemcpy(data, rnd_data.data(), elem_count->at(i) * sizeof(float),
                          cudaMemcpyHostToDevice),
-              logger_);
+              *logger_);
     device_input_buffers_.emplace(input->getName(), data);
   }
 }
 
 RndInt8Calibrator::~RndInt8Calibrator() {
   for (auto& elem : device_input_buffers_) {
-    cudaCheck(cudaFree(elem.second), logger_);
+    cudaCheck(cudaFree(elem.second), *logger_);
   }
 }
 

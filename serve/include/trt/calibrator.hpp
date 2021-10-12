@@ -2,6 +2,7 @@
 #include <NvInfer.h>
 
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -11,7 +12,8 @@
 namespace ssdf::serve::trt {
 class RndInt8Calibrator : public nvinfer1::IInt8EntropyCalibrator2 {
  public:
-  RndInt8Calibrator(int batches, const std::filesystem::path& cache_file, const ILogger& logger,
+  RndInt8Calibrator(int batches, const std::filesystem::path& cache_file,
+                    const std::shared_ptr<ILogger>& logger,
                     const nvinfer1::INetworkDefinition& network, std::vector<int64_t>* elem_count);
   virtual ~RndInt8Calibrator();
 
@@ -29,7 +31,7 @@ class RndInt8Calibrator : public nvinfer1::IInt8EntropyCalibrator2 {
   std::filesystem::path cache_file_;
   std::unordered_map<std::string, void*> device_input_buffers_;
   std::vector<char> calibration_cache_;
-  const ILogger& logger_;
+  const std::shared_ptr<ILogger> logger_;
 };
 
 }  // namespace ssdf::serve::trt
