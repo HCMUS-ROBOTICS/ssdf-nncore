@@ -1,3 +1,4 @@
+from typing import Optional
 from torch import nn
 from . import MODEL_REGISTRY
 
