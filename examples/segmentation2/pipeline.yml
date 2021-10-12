@@ -1,21 +1,17 @@
 learner:
-  name: SegmentationLearner
+  name: SemanticLearner
   args:
 device:
   name: get_device
   args:
 model:
-  name: ModelMixin
-  constructor: from_cfg
+  name: deeplabv3_resnet50
   args:
-    model:
-      name: deeplabv3_resnet50
-      args:
-        pretrained: False
-        num_classes: 14
-    criterion:
-      name: CEwithstat
-      args:
+    pretrained: False
+    num_classes: 14
+criterion:
+  name: CEwithstat
+  args:
 optimizer:
   name: Adam
   args:

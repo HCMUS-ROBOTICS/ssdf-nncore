@@ -1,14 +1,10 @@
 from torch.optim import SGD, Adam, RMSprop
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
 from torch.utils.data import DataLoader, random_split
-
-from nncore.datasets import DATASET_REGISTRY
-
-from ..models.wrapper import ModelMixin
-from ..metrics import *
-from ..externals import *
-from ..utils import *
-from ..learner import *
+from nncore.core.models.wrapper import ModelWithLoss
+from nncore.core.datasets import DATASET_REGISTRY
+from nncore.core.metrics import METRIC_REGISTRY
+from nncore.utils.device import get_device
 
 
 def get_instance(config, registry=None, **kwargs):

@@ -33,10 +33,6 @@ def load_model(
         print("Model loaded")
 
 
-def load_yaml(cfg_path: str):
-    return yaml.load(open(cfg_path, "r"), Loader=yaml.Loader)
-
-
 def tensor2plt(obj: torch.Tensor, title: List[Any]):
     fig = plt.figure()
     plt.imshow(obj.permute(1, 2, 0))
