@@ -2,8 +2,8 @@
 #include <NvInfer.h>
 
 #include <filesystem>
-#include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "serve/logger.hpp"
@@ -15,7 +15,7 @@ class RndInt8Calibrator : public nvinfer1::IInt8EntropyCalibrator2 {
                     const nvinfer1::INetworkDefinition& network, std::vector<int64_t>* elem_count);
   virtual ~RndInt8Calibrator();
 
-  bool getBatch(void* bindings[], const char* names[], int nbBindings) noexcept override;
+  bool getBatch(void* bindings[], const char* names[], int nb_bingdinds) noexcept override;
 
   int getBatchSize() const noexcept override;
 
@@ -27,7 +27,7 @@ class RndInt8Calibrator : public nvinfer1::IInt8EntropyCalibrator2 {
   int batches_;
   int current_batch_;
   std::filesystem::path cache_file_;
-  std::map<std::string, void*> device_input_buffers_;
+  std::unordered_map<std::string, void*> device_input_buffers_;
   std::vector<char> calibration_cache_;
   const ILogger& logger_;
 };

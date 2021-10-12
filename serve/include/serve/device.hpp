@@ -13,18 +13,19 @@ inline void cudaCheck(cudaError_t ret, const ILogger& logger) {
   }
 }
 
-static auto StreamDeleter = [](cudaStream_t* pStream) {
-  if (pStream) {
-    cudaStreamDestroy(*pStream);
-    delete pStream;
+static auto StreamDeleter = [](cudaStream_t* stream_ptr) {
+  if (stream_ptr) {
+    cudaStreamDestroy(*stream_ptr);
+    delete stream_ptr;
   }
 };
 
 inline std::unique_ptr<cudaStream_t, decltype(StreamDeleter)> makeCudaStream() {
-  std::unique_ptr<cudaStream_t, decltype(StreamDeleter)> pStream(new cudaStream_t, StreamDeleter);
-  if (cudaStreamCreateWithFlags(pStream.get(), cudaStreamNonBlocking) != cudaSuccess) {
-    pStream.reset(nullptr);
+  std::unique_ptr<cudaStream_t, decltype(StreamDeleter)> stream_ptr(new cudaStream_t,
+                                                                    StreamDeleter);
+  if (cudaStreamCreateWithFlags(stream_ptr.get(), cudaStreamNonBlocking) != cudaSuccess) {
+    stream_ptr.reset(nullptr);
   }
-  return pStream;
+  return stream_ptr;
 }
 }  // namespace ssdf::serve

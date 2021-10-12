@@ -35,13 +35,12 @@ class Generator {
    */
   template <typename network_t>
   nvinfer1::IHostMemory* getSerializedEngine(const network_t& network_def) {
-    const bool def_convertible_to_path{std::is_convertible_v<network_t, std::filesystem::path>};
-    static_assert(def_convertible_to_path);
+    static_assert(std::is_convertible_v<network_t, std::filesystem::path>);
     std::vector<std::vector<char>> sparse_weights;  // TODO(Ky) move to inside function?
     auto&& [builder, network, config] = setupBuildEnvironment(&sparse_weights);
 
     std::unique_ptr<nvonnxparser::IParser> parser{nullptr};
-    if (def_convertible_to_path) {
+    if (std::is_convertible_v<network_t, std::filesystem::path>) {
       const std::filesystem::path& onnx_path{network_def};
       parser.reset(nvonnxparser::createParser(*network, logger_->getTRTLogger()));
       if (!parser->parseFromFile(onnx_path.c_str(), static_cast<int>(logger_->getCurrentLevel()))) {

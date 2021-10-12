@@ -32,8 +32,7 @@ RndInt8Calibrator::RndInt8Calibrator(int batches, const std::filesystem::path& c
     cudaCheck(cudaMemcpy(data, rnd_data.data(), elem_count->at(i) * sizeof(float),
                          cudaMemcpyHostToDevice),
               logger_);
-
-    device_input_buffers_.insert(std::make_pair(input->getName(), data));
+    device_input_buffers_.emplace(input->getName(), data);
   }
 }
 

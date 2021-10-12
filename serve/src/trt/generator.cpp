@@ -3,6 +3,7 @@
 #include <fmt/ranges.h>
 
 #include <fstream>
+#include <unordered_map>
 #include <utility>
 
 #include "half.hpp"
@@ -12,30 +13,30 @@
 
 namespace ssdf::serve::trt {
 namespace {
-std::map<std::string, float> readScalesFromCalibrationCache(
-    const std::filesystem::path& calibrationFile, const ILogger& logger) {
-  std::map<std::string, float> tensorScales;
-  std::ifstream cache{calibrationFile};
+std::unordered_map<std::string, float> readScalesFromCalibrationCache(
+    const std::filesystem::path& calibration_file, const ILogger& logger) {
+  std::unordered_map<std::string, float> tensor_scales;
+  std::ifstream cache{calibration_file};
   if (!cache) {
     logger.error("[TRT] Can not open provided calibration cache file");
-    return tensorScales;
+    return tensor_scales;
   }
   std::string line;
   while (std::getline(cache, line)) {
-    auto colonPos = line.find_last_of(':');
-    if (colonPos != std::string::npos) {
+    auto colon_pos = line.find_last_of(':');
+    if (colon_pos != std::string::npos) {
       // Scales should be stored in calibration cache as 32-bit floating numbers
       // encoded as 32-bit integers
-      int32_t scalesAsInt = std::stoi(line.substr(colonPos + 2, 8), nullptr, 16);
-      const auto tensorName = line.substr(0, colonPos);
-      tensorScales[tensorName] = *reinterpret_cast<float*>(&scalesAsInt);
+      int32_t scales_as_int = std::stoi(line.substr(colon_pos + 2, 8), nullptr, 16);
+      const auto tensor_name = line.substr(0, colon_pos);
+      tensor_scales.emplace(tensor_name, *reinterpret_cast<float*>(&scales_as_int));
     }
   }
-  return tensorScales;
+  return tensor_scales;
 }
 
-bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float inRange = 2.0f,
-                           float outRange = 4.0f) {
+bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float in_range = 2.0f,
+                           float out_range = 4.0f) {
   // Ensure that all layer inputs have a dynamic range.
   for (int l = 0; l < network.getNbLayers(); ++l) {
     nvinfer1::ILayer* layer{network.getLayer(l)};
@@ -43,7 +44,7 @@ bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float in
       nvinfer1::ITensor* input{layer->getInput(i)};
       // Optional inputs are nullptr here and are from RNN layers.
       if (input && !input->dynamicRangeIsSet()) {
-        if (!input->setDynamicRange(-inRange, inRange)) {
+        if (!input->setDynamicRange(-in_range, in_range)) {
           return false;
         }
       }
@@ -54,11 +55,11 @@ bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float in
       if (output && !output->dynamicRangeIsSet()) {
         // Pooling must have the same input and output dynamic range.
         if (layer->getType() == nvinfer1::LayerType::kPOOLING) {
-          if (!output->setDynamicRange(-inRange, inRange)) {
+          if (!output->setDynamicRange(-in_range, in_range)) {
             return false;
           }
         } else {
-          if (!output->setDynamicRange(-outRange, outRange)) {
+          if (!output->setDynamicRange(-out_range, out_range)) {
             return false;
           }
         }
@@ -68,38 +69,38 @@ bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float in
   return true;
 }
 
-void setTensorScalesFromCalibration(const std::vector<IOFormat>& inputFormats,
-                                    const std::vector<IOFormat>& outputFormats,
-                                    const std::filesystem::path& calibrationFile,
+void setTensorScalesFromCalibration(const std::vector<IOFormat>& input_formats,
+                                    const std::vector<IOFormat>& output_formats,
+                                    const std::filesystem::path& calibration_file,
                                     const nvinfer1::INetworkDefinition& network,
                                     const ILogger& logger) {
-  const auto tensorScales = readScalesFromCalibrationCache(calibrationFile, logger);
-  const bool broadcastInputFormats = broadcastIOFormats(inputFormats, network.getNbInputs());
+  const auto tensor_scales = readScalesFromCalibrationCache(calibration_file, logger);
+  const bool broadcast_input_formats = broadcastIOFormats(input_formats, network.getNbInputs());
   for (int32_t i = 0, n = network.getNbInputs(); i < n; ++i) {
-    int32_t formatIdx = broadcastInputFormats ? 0 : i;
-    if (!inputFormats.empty() && inputFormats[formatIdx].first == nvinfer1::DataType::kINT8) {
+    int32_t formatIdx = broadcast_input_formats ? 0 : i;
+    if (!input_formats.empty() && input_formats[formatIdx].first == nvinfer1::DataType::kINT8) {
       auto* input = network.getInput(i);
-      const auto calibScale = tensorScales.at(input->getName());
-      input->setDynamicRange(-127 * calibScale, 127 * calibScale);
+      const auto calib_scale = tensor_scales.at(input->getName());
+      input->setDynamicRange(-127 * calib_scale, 127 * calib_scale);
     }
   }
-  const bool broadcastOutputFormats = broadcastIOFormats(outputFormats, network.getNbInputs());
+  const bool broadcast_output_formats = broadcastIOFormats(output_formats, network.getNbInputs());
   for (int32_t i = 0, n = network.getNbOutputs(); i < n; ++i) {
-    int32_t formatIdx = broadcastOutputFormats ? 0 : i;
-    if (!outputFormats.empty() && outputFormats[formatIdx].first == nvinfer1::DataType::kINT8) {
+    int32_t format_idx = broadcast_output_formats ? 0 : i;
+    if (!output_formats.empty() && output_formats[format_idx].first == nvinfer1::DataType::kINT8) {
       auto* output = network.getOutput(i);
-      const auto calibScale = tensorScales.at(output->getName());
-      output->setDynamicRange(-127 * calibScale, 127 * calibScale);
+      const auto calib_scale = tensor_scales.at(output->getName());
+      output->setDynamicRange(-127 * calib_scale, 127 * calib_scale);
     }
   }
 }
 
 template <typename T>
 void sparsify(const T* values, int64_t count, int32_t k, int32_t rs,
-              std::vector<char>* sparseWeights) {
+              std::vector<char>* sparse_weights) {
   const auto c = count / (k * rs);
-  sparseWeights->resize(count * sizeof(T));
-  auto* sparseValues = reinterpret_cast<T*>(sparseWeights->data());
+  sparse_weights->resize(count * sizeof(T));
+  auto* sparse_values = reinterpret_cast<T*>(sparse_weights->data());
 
   constexpr int32_t window = 4;
   constexpr int32_t nonzeros = 2;
@@ -116,10 +117,10 @@ void sparsify(const T* values, int64_t count, int32_t k, int32_t rs,
       for (int64_t ci = 0; ci < c; ++ci) {
         const auto index = getIndex(ki, ci, rsi);
         if (nz < nonzeros) {
-          sparseValues[index] = values[index];
+          sparse_values[index] = values[index];
           ++nz;
         } else {
-          sparseValues[index] = 0;
+          sparse_values[index] = 0;
         }
         if (++w == window) {
           w = 0;
@@ -131,15 +132,15 @@ void sparsify(const T* values, int64_t count, int32_t k, int32_t rs,
 }
 
 void sparsify(const nvinfer1::Weights& weights, int32_t k, int32_t rs,
-              std::vector<char>* sparseWeights) {
+              std::vector<char>* sparse_weights) {
   using nvinfer1::DataType;
   switch (weights.type) {
     case DataType::kFLOAT:
-      sparsify(static_cast<const float*>(weights.values), weights.count, k, rs, sparseWeights);
+      sparsify(static_cast<const float*>(weights.values), weights.count, k, rs, sparse_weights);
       break;
     case DataType::kHALF:
       sparsify(static_cast<const half_float::half*>(weights.values), weights.count, k, rs,
-               sparseWeights);
+               sparse_weights);
       break;
     case DataType::kINT8:
     case DataType::kINT32:
@@ -149,15 +150,15 @@ void sparsify(const nvinfer1::Weights& weights, int32_t k, int32_t rs,
 }
 
 template <typename Layer>
-void setSparseWeights(int32_t k, int32_t rs, Layer* layer, std::vector<char>* sparseWeights) {
+void setSparseWeights(int32_t k, int32_t rs, Layer* layer, std::vector<char>* sparse_weights) {
   auto weights = layer->getKernelWeights();
-  sparsify(weights, k, rs, sparseWeights);
-  weights.values = sparseWeights->data();
+  sparsify(weights, k, rs, sparse_weights);
+  weights.values = sparse_weights->data();
   layer->setKernelWeights(weights);
 }
 
 void sparsify(const nvinfer1::INetworkDefinition& network,
-              std::vector<std::vector<char>>* sparseWeights) {
+              std::vector<std::vector<char>>* sparse_weights) {
   for (int32_t l = 0; l < network.getNbLayers(); ++l) {
     nvinfer1::ILayer* layer = network.getLayer(l);
     const auto layer_type = layer->getType();
@@ -169,13 +170,13 @@ void sparsify(const nvinfer1::INetworkDefinition& network,
       }
       const auto k = conv.getNbOutputMaps();
       const auto rs = dims.d[0] * dims.d[1];
-      sparseWeights->emplace_back();
-      setSparseWeights(k, rs, &conv, &sparseWeights->back());
+      sparse_weights->emplace_back();
+      setSparseWeights(k, rs, &conv, &sparse_weights->back());
     } else if (layer_type == nvinfer1::LayerType::kFULLY_CONNECTED) {
       auto& fc = *static_cast<nvinfer1::IFullyConnectedLayer*>(layer);
       const auto k = fc.getNbOutputChannels();
-      sparseWeights->emplace_back();
-      setSparseWeights(k, 1, &fc, &sparseWeights->back());
+      sparse_weights->emplace_back();
+      setSparseWeights(k, 1, &fc, &sparse_weights->back());
     }
   }
 }
@@ -237,28 +238,28 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
     throw std::runtime_error("Network creation failed");
   }
 
-  nvinfer1::IOptimizationProfile* profile{nullptr};
+  nvinfer1::IOptimizationProfile* profile = nullptr;
   if (build_.max_batch) {
     builder->setMaxBatchSize(build_.max_batch);
   } else {
     profile = builder->createOptimizationProfile();
   }
 
-  bool has_dynamic_shapes{false};
-  bool broadcast_input_formats{broadcastIOFormats(build_.input_formats, network->getNbInputs())};
+  bool has_dynamic_shapes = false;
+  bool broadcast_input_formats = broadcastIOFormats(build_.input_formats, network->getNbInputs());
   // Check if the provided input tensor names match the input tensors of the
   // engine. Throw an error if the provided input tensor names cannot be found
   // because it implies a potential typo.
   if (profile) {
     for (const auto& shape : build_.shapes) {
-      bool tensorNameFound{false};
+      bool tensor_name_found = false;
       for (int32_t i = 0; i < network->getNbInputs(); ++i) {
         if (network->getInput(i)->getName() == shape.first) {
-          tensorNameFound = true;
+          tensor_name_found = true;
           break;
         }
       }
-      if (!tensorNameFound) {
+      if (!tensor_name_found) {
         throw std::invalid_argument(
             "Cannot find input tensor with name \"" + shape.first +
             "\" in the network inputs! Please make sure the input tensor names are correct.");
@@ -304,32 +305,32 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
         // If no shape is provided, set dynamic dimensions to 1.
         if (shape == build_.shapes.end()) {
           constexpr int DEFAULT_DIMENSION = 1;
-          std::vector<int> staticDims;
+          std::vector<int> static_dims;
           if (input->isShapeTensor()) {
             if (isScalar) {
-              staticDims.push_back(1);
+              static_dims.push_back(1);
             } else {
-              staticDims.resize(dims.d[0]);
-              std::fill(staticDims.begin(), staticDims.end(), DEFAULT_DIMENSION);
+              static_dims.resize(dims.d[0]);
+              std::fill(static_dims.begin(), static_dims.end(), DEFAULT_DIMENSION);
             }
           } else {
-            staticDims.resize(dims.nbDims);
-            std::transform(dims.d, dims.d + dims.nbDims, staticDims.begin(), [&](int dimension) {
+            static_dims.resize(dims.nbDims);
+            std::transform(dims.d, dims.d + dims.nbDims, static_dims.begin(), [&](int dimension) {
               return dimension > 0 ? dimension : DEFAULT_DIMENSION;
             });
           }
           logger_->warn(
               "Dynamic dimensions required for input: {}, but no shapes were provided. "
               "Automatically overriding shape to: {}",
-              input->getName(), fmt::join(staticDims, "x"));
-          std::fill(shapes.begin(), shapes.end(), staticDims);
+              input->getName(), fmt::join(static_dims, "x"));
+          std::fill(shapes.begin(), shapes.end(), static_dims);
         } else {
           shapes = shape->second;
         }
 
         std::vector<int> profile_dims;
         if (input->isShapeTensor()) {
-          auto setShapeValues = [&](OptProfileSelector selector, const std::string& name) {
+          const auto setShapeValues = [&](OptProfileSelector selector, const std::string& name) {
             profile_dims = shapes[static_cast<size_t>(selector)];
             if (!profile->setShapeValues(input->getName(), selector, profile_dims.data(),
                                          static_cast<int>(profile_dims.size()))) {
@@ -341,7 +342,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
           setShapeValues(OptProfileSelector::kOPT, "OPT");
           setShapeValues(OptProfileSelector::kMAX, "MAX");
         } else {
-          auto setDimensions = [&](OptProfileSelector selector, const std::string& name) {
+          const auto setDimensions = [&](OptProfileSelector selector, const std::string& name) {
             profile_dims = shapes[static_cast<size_t>(selector)];
             if (!profile->setDimensions(input->getName(), selector,
                                         toDims(profile_dims, *logger_))) {
@@ -373,8 +374,8 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
     }
   }
 
-  bool broadcast_output_formats{
-      broadcastIOFormats(build_.output_formats, network->getNbOutputs(), false)};
+  bool broadcast_output_formats =
+      broadcastIOFormats(build_.output_formats, network->getNbOutputs(), false);
   for (uint32_t i = 0, n = network->getNbOutputs(); i < n; ++i) {
     // Set formats and data types of outputs
     nvinfer1::ITensor* output = network->getOutput(i);
@@ -438,10 +439,10 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
       }
     }
 
-    nvinfer1::IOptimizationProfile* profile_calib{nullptr};
+    nvinfer1::IOptimizationProfile* profile_calib = nullptr;
     if (!build_.shapes_calib.empty()) {
       profile_calib = builder->createOptimizationProfile();
-      for (uint32_t i = 0, n = network->getNbInputs(); i < n; i++) {
+      for (uint32_t i = 0, n = network->getNbInputs(); i < n; ++i) {
         auto* input = network->getInput(i);
         nvinfer1::Dims profile_dims{};
         auto shape = build_.shapes_calib.find(input->getName());
