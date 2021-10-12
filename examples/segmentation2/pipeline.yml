@@ -1,5 +1,5 @@
 learner:
-  name: SegmentationLearner
+  name: SemanticLearner
   args:
 device:
   name: get_device
@@ -30,11 +30,10 @@ data:
   trainval:
     test_ratio: 0.2
     dataset:
-      name: LyftDataset
-      constructor: from_folder
+      name: LyftDataset.from_folder
       args:
         sample: True
-        root: ../../data
+        root: '.'
         test: True
         mask_folder_name: CameraSeg
         image_folder_name: CameraRGB

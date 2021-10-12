@@ -1,8 +1,10 @@
-import torch
 import copy
-from .typing import *
-import yaml
+from typing import Any, Dict, List
+
 import matplotlib.pyplot as plt
+import torch
+import yaml
+from torch.nn import Module
 
 
 def copy_model(model: Module) -> Module:
@@ -31,16 +33,7 @@ def load_model(
         print("Model loaded")
 
 
-def load_yaml(cfg_path: str):
-    return yaml.load(open(cfg_path, "r"), Loader=yaml.Loader)
-
-
-def vprint(obj: str, verbose: bool):
-    if verbose:
-        print(obj)
-
-
-def tensor2plt(obj: Tensor, title: List[Any]):
+def tensor2plt(obj: torch.Tensor, title: List[Any]):
     fig = plt.figure()
     plt.imshow(obj.permute(1, 2, 0))
     plt.title(title)
