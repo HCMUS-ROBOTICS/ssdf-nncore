@@ -1,4 +1,5 @@
-add_library(ssdf_serve trt/calibrator.cpp trt/generator.cpp trt/utils.cpp)
+add_library(ssdf_serve serve/inference.cpp trt/backend.cpp trt/calibrator.cpp
+                       trt/generator.cpp trt/utils.cpp)
 target_include_directories(ssdf_serve PUBLIC ${PROJECT_SOURCE_DIR}/include
                                              ${CUDAToolkit_INCLUDE_DIRS})
 target_link_libraries(ssdf_serve CUDA::cudart fmt::fmt TensorRT::nvonnxparser

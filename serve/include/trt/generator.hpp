@@ -34,10 +34,10 @@ class Generator {
    * @return nvinfer1::IHostMemory*
    */
   template <typename network_t>
-  nvinfer1::IHostMemory* getSerializedEngine(const network_t& network_def) {
+  std::unique_ptr<nvinfer1::IHostMemory> getSerializedEngine(const network_t& network_def) {
     static_assert(std::is_convertible_v<network_t, std::filesystem::path>);
     std::vector<std::vector<char>> sparse_weights;  // TODO(Ky) move to inside function?
-    auto&& [builder, network, config] = setupBuildEnvironment(&sparse_weights);
+    auto&& [builder, network, config] = this->setupBuildEnvironment(&sparse_weights);
 
     std::unique_ptr<nvonnxparser::IParser> parser{nullptr};
     if (std::is_convertible_v<network_t, std::filesystem::path>) {
@@ -73,7 +73,7 @@ class Generator {
     }
     config->setProfileStream(*profile_stream);
 
-    return builder->buildSerializedNetwork(*network, *config);
+    return std::unique_ptr(builder->buildSerializedNetwork(*network, *config));
   }
 
  private:

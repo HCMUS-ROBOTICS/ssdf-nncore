@@ -2,7 +2,6 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iterator>
 #include <random>
 
 #include "serve/device.hpp"
