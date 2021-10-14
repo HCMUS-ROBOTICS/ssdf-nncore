@@ -17,6 +17,21 @@ bool broadcastIOFormats(const std::vector<IOFormat>& formats, size_t nb_bindings
   return broadcast;
 }
 
+uint32_t getElementSize(nvinfer1::DataType data_type) noexcept {
+  switch (data_type) {
+    case nvinfer1::DataType::kINT32:
+      return 4;
+    case nvinfer1::DataType::kFLOAT:
+      return 4;
+    case nvinfer1::DataType::kHALF:
+      return 2;
+    case nvinfer1::DataType::kBOOL:
+    case nvinfer1::DataType::kINT8:
+      return 1;
+  }
+  return 0;
+}
+
 std::vector<char> loadTimingCacheFile(const std::filesystem::path& file_path,
                                       const ILogger& logger) {
   std::ifstream iFile(file_path, std::ios::in | std::ios::binary);
