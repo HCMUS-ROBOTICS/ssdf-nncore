@@ -72,17 +72,17 @@ void setTensorScalesFromCalibration(const std::vector<IOFormat>& input_formats,
                                     const ILogger& logger) {
   const auto tensor_scales = readScalesFromCalibrationCache(calibration_file, logger);
   const bool broadcast_input_formats = broadcastIOFormats(input_formats, network.getNbInputs());
-  for (int32_t i = 0, n = network.getNbInputs(); i < n; ++i) {
-    int32_t formatIdx = broadcast_input_formats ? 0 : i;
-    if (!input_formats.empty() && input_formats[formatIdx].first == nvinfer1::DataType::kINT8) {
+  for (int i = 0, n = network.getNbInputs(); i < n; ++i) {
+    int format_idx = broadcast_input_formats ? 0 : i;
+    if (!input_formats.empty() && input_formats[format_idx].first == nvinfer1::DataType::kINT8) {
       nvinfer1::ITensor* input = network.getInput(i);
       const float calib_scale = tensor_scales.at(input->getName());
       input->setDynamicRange(-127 * calib_scale, 127 * calib_scale);
     }
   }
   const bool broadcast_output_formats = broadcastIOFormats(output_formats, network.getNbInputs());
-  for (int32_t i = 0, n = network.getNbOutputs(); i < n; ++i) {
-    int32_t format_idx = broadcast_output_formats ? 0 : i;
+  for (int i = 0, n = network.getNbOutputs(); i < n; ++i) {
+    int format_idx = broadcast_output_formats ? 0 : i;
     if (!output_formats.empty() && output_formats[format_idx].first == nvinfer1::DataType::kINT8) {
       nvinfer1::ITensor* output = network.getOutput(i);
       const float calib_scale = tensor_scales.at(output->getName());
@@ -92,26 +92,25 @@ void setTensorScalesFromCalibration(const std::vector<IOFormat>& input_formats,
 }
 
 template <typename T>
-void sparsify(const T* values, int64_t count, int32_t k, int32_t rs,
-              std::vector<char>* sparse_weights) {
-  const auto c = count / (k * rs);
+void sparsify(const T* values, int64_t count, int k, int rs, std::vector<char>* sparse_weights) {
+  const int64_t c = count / (k * rs);
   sparse_weights->resize(count * sizeof(T));
   auto* sparse_values = reinterpret_cast<T*>(sparse_weights->data());
 
-  constexpr int32_t window = 4;
-  constexpr int32_t nonzeros = 2;
+  constexpr int window = 4;
+  constexpr int nonzeros = 2;
 
-  const int32_t crs = c * rs;
-  const auto getIndex = [=](int32_t ki, int32_t ci, int32_t rsi) {
+  const int64_t crs = c * rs;
+  const auto getIndex = [=](int32_t ki, int64_t ci, int32_t rsi) -> int64_t {
     return ki * crs + ci * rs + rsi;
   };
 
-  for (int64_t ki = 0; ki < k; ++ki) {
-    for (int64_t rsi = 0; rsi < rs; ++rsi) {
-      int32_t w = 0;
-      int32_t nz = 0;
+  for (int ki = 0; ki < k; ++ki) {
+    for (int rsi = 0; rsi < rs; ++rsi) {
+      int w = 0;
+      int nz = 0;
       for (int64_t ci = 0; ci < c; ++ci) {
-        const auto index = getIndex(ki, ci, rsi);
+        const int64_t index = getIndex(ki, ci, rsi);
         if (nz < nonzeros) {
           sparse_values[index] = values[index];
           ++nz;
@@ -146,7 +145,7 @@ void sparsify(const nvinfer1::Weights& weights, int32_t k, int32_t rs,
 }
 
 template <typename Layer>
-void setSparseWeights(int32_t k, int32_t rs, Layer* layer, std::vector<char>* sparse_weights) {
+void setSparseWeights(int k, int rs, Layer* layer, std::vector<char>* sparse_weights) {
   static_assert(std::is_base_of_v<nvinfer1::ILayer, Layer>);
   nvinfer1::Weights weights = layer->getKernelWeights();
   sparsify(weights, k, rs, sparse_weights);
@@ -156,24 +155,24 @@ void setSparseWeights(int32_t k, int32_t rs, Layer* layer, std::vector<char>* sp
 
 void sparsify(const nvinfer1::INetworkDefinition& network,
               std::vector<std::vector<char>>* sparse_weights) {
-  for (int32_t l = 0; l < network.getNbLayers(); ++l) {
+  for (int l = 0; l < network.getNbLayers(); ++l) {
     nvinfer1::ILayer* layer = network.getLayer(l);
     const nvinfer1::LayerType layer_type = layer->getType();
     if (layer_type == nvinfer1::LayerType::kCONVOLUTION) {
-      auto& conv = *static_cast<nvinfer1::IConvolutionLayer*>(layer);
-      const auto& dims = conv.getKernelSizeNd();
+      auto conv = static_cast<nvinfer1::IConvolutionLayer*>(layer);
+      const auto& dims = conv->getKernelSizeNd();
       if (dims.nbDims > 2) {
         continue;
       }
-      const auto k = conv.getNbOutputMaps();
-      const auto rs = dims.d[0] * dims.d[1];
+      const int k = conv->getNbOutputMaps();
+      const int rs = dims.d[0] * dims.d[1];
       sparse_weights->emplace_back();
-      setSparseWeights(k, rs, &conv, &sparse_weights->back());
+      setSparseWeights(k, rs, conv, &sparse_weights->back());
     } else if (layer_type == nvinfer1::LayerType::kFULLY_CONNECTED) {
-      auto& fc = *static_cast<nvinfer1::IFullyConnectedLayer*>(layer);
-      const auto k = fc.getNbOutputChannels();
+      auto fc = static_cast<nvinfer1::IFullyConnectedLayer*>(layer);
+      const int k = fc->getNbOutputChannels();
       sparse_weights->emplace_back();
-      setSparseWeights(k, 1, &fc, &sparse_weights->back());
+      setSparseWeights(k, 1, fc, &sparse_weights->back());
     }
   }
 }
@@ -230,7 +229,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
   std::unique_ptr<nvinfer1::INetworkDefinition> network{builder->createNetworkV2(
       build_.max_batch
           ? 0U
-          : 1U << static_cast<uint32_t>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH))};
+          : 1U << static_cast<int>(nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH))};
   if (!network) {
     throw std::runtime_error("Network creation failed");
   }
@@ -250,7 +249,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
   if (profile) {
     for (const auto& shape : build_.shapes) {
       bool tensor_name_found = false;
-      for (int32_t i = 0; i < network->getNbInputs(); ++i) {
+      for (int i = 0; i < network->getNbInputs(); ++i) {
         if (network->getInput(i)->getName() == shape.first) {
           tensor_name_found = true;
           break;
@@ -266,7 +265,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
 
   using nvinfer1::DataType, nvinfer1::OptProfileSelector;
   // Set formats and data types of inputs
-  for (uint32_t i = 0, n = network->getNbInputs(); i < n; ++i) {
+  for (int i = 0, n = network->getNbInputs(); i < n; ++i) {
     nvinfer1::ITensor* input = network->getInput(i);
     if (!build_.input_formats.empty()) {
       int input_format_index = broadcast_input_formats ? 0 : i;
@@ -373,7 +372,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
 
   bool broadcast_output_formats =
       broadcastIOFormats(build_.output_formats, network->getNbOutputs(), false);
-  for (uint32_t i = 0, n = network->getNbOutputs(); i < n; ++i) {
+  for (int i = 0, n = network->getNbOutputs(); i < n; ++i) {
     // Set formats and data types of outputs
     nvinfer1::ITensor* output = network->getOutput(i);
     if (!build_.output_formats.empty()) {
@@ -404,7 +403,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
       std::count_if(build_.output_formats.begin(), build_.output_formats.end(), isInt8);
   const auto hasQDQLayers = [](const nvinfer1::INetworkDefinition& network) {
     // Determine if our network has QDQ layers.
-    for (int32_t i = 0; i < network.getNbLayers(); ++i) {
+    for (int i = 0; i < network.getNbLayers(); ++i) {
       const auto& layer = network.getLayer(i);
       if (layer->getType() == nvinfer1::LayerType::kQUANTIZE ||
           layer->getType() == nvinfer1::LayerType::kDEQUANTIZE) {
@@ -439,7 +438,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
     nvinfer1::IOptimizationProfile* profile_calib = nullptr;
     if (!build_.shapes_calib.empty()) {
       profile_calib = builder->createOptimizationProfile();
-      for (int32_t i = 0, n = network->getNbInputs(); i < n; ++i) {
+      for (int i = 0, n = network->getNbInputs(); i < n; ++i) {
         nvinfer1::ITensor* input = network->getInput(i);
         nvinfer1::Dims profile_dims{};
         auto shape = build_.shapes_calib.find(input->getName());

@@ -73,7 +73,8 @@ class Generator {
     }
     config->setProfileStream(*profile_stream);
 
-    return std::unique_ptr(builder->buildSerializedNetwork(*network, *config));
+    return std::unique_ptr<nvinfer1::IHostMemory>{
+        builder->buildSerializedNetwork(*network, *config)};
   }
 
  private:
