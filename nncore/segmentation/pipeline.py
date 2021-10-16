@@ -3,16 +3,18 @@ from typing import Optional
 
 import yaml
 from nncore.core.models.wrapper import ModelWithLoss
-from nncore.core.test import evaluate
-from nncore.segmentation.datasets import DATASET_REGISTRY
-from nncore.segmentation.criterion import CRITERION_REGISTRY
-from nncore.segmentation.models import MODEL_REGISTRY
-from nncore.segmentation.metrics import METRIC_REGISTRY
-from nncore.segmentation.learner import LEARNER_REGISTRY
-from nncore.utils.getter import get_data, get_instance
-from nncore.utils.loading import load_yaml
-from torchvision.transforms import transforms as tf
 from nncore.core.opt import opts
+from nncore.core.test import evaluate
+from nncore.segmentation.criterion import CRITERION_REGISTRY
+from nncore.segmentation.datasets import DATASET_REGISTRY
+from nncore.segmentation.learner import LEARNER_REGISTRY
+from nncore.segmentation.metrics import METRIC_REGISTRY
+from nncore.segmentation.models import MODEL_REGISTRY
+from nncore.utils.getter import (get_dataloader, get_dataset_size,
+                                 get_instance, get_single_data)
+from nncore.utils.loading import load_yaml
+from torch.utils.data.dataset import random_split
+from torchvision.transforms import transforms as tf
 
 
 class Pipeline(object):
@@ -31,7 +33,7 @@ class Pipeline(object):
         self.device = get_instance(self.cfg["device"])
         print(self.device)
 
-        self.train_dataloader, self.val_dataloader = get_data(
+        self.train_dataloader, self.val_dataloader = self.get_data(
             self.cfg["data"], return_dataset=False
         )
 
@@ -91,3 +93,29 @@ class Pipeline(object):
         print(f"Loss: {avg_loss}")
         for m in metric.values():
             m.summary()
+
+    def get_data(self, cfg, return_dataset=False):
+        if cfg.get("train", False) and cfg.get("val", False):
+            train_dataloader, train_dataset = get_single_data(
+                cfg["train"], return_dataset=True
+            )
+            val_dataloader, val_dataset = get_single_data(cfg["val"], return_dataset=True)
+        elif cfg.get("trainval", False):
+            trainval_cfg = cfg["trainval"]
+            # Split dataset train:val = ratio:(1-ratio)
+            ratio = trainval_cfg["test_ratio"]
+            dataset = get_instance(trainval_cfg["dataset"], registry=DATASET_REGISTRY)
+            train_sz, val_sz = get_dataset_size(ratio=ratio, dataset_sz=len(dataset))
+            train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
+            # Get dataloader
+            train_dataloader = get_dataloader(
+                trainval_cfg["loader"]["train"], train_dataset
+            )
+            val_dataloader = get_dataloader(trainval_cfg["loader"]["val"], val_dataset)
+        else:
+            raise Exception("Dataset config is not correctly formatted.")
+        return (
+            (train_dataloader, val_dataloader, train_dataset, val_dataset)
+            if return_dataset
+            else (train_dataloader, val_dataloader)
+        )

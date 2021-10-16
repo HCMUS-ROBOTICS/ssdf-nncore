@@ -39,33 +39,6 @@ def get_single_data(cfg, return_dataset=True):
     return dataloader, dataset if return_dataset else dataloader
 
 
-def get_data(cfg, return_dataset=False):
-    if cfg.get("train", False) and cfg.get("val", False):
-        train_dataloader, train_dataset = get_single_data(
-            cfg["train"], return_dataset=True
-        )
-        val_dataloader, val_dataset = get_single_data(cfg["val"], return_dataset=True)
-    elif cfg.get("trainval", False):
-        trainval_cfg = cfg["trainval"]
-        # Split dataset train:val = ratio:(1-ratio)
-        ratio = trainval_cfg["test_ratio"]
-        dataset = get_instance(trainval_cfg["dataset"], registry=DATASET_REGISTRY)
-        train_sz, val_sz = get_dataset_size(ratio=ratio, dataset_sz=len(dataset))
-        train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
-        # Get dataloader
-        train_dataloader = get_dataloader(
-            trainval_cfg["loader"]["train"], train_dataset
-        )
-        val_dataloader = get_dataloader(trainval_cfg["loader"]["val"], val_dataset)
-    else:
-        raise Exception("Dataset config is not correctly formatted.")
-    return (
-        (train_dataloader, val_dataloader, train_dataset, val_dataset)
-        if return_dataset
-        else (train_dataloader, val_dataloader)
-    )
-
-
 def get_dataset_size(ratio: float, dataset_sz: int):
     val_sz = max(1, int(ratio * dataset_sz))
     train_sz = dataset_sz - val_sz
