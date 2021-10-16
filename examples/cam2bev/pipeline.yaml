@@ -1,0 +1,55 @@
+learner:
+  name: Cam2BEVLearner
+  args:
+device:
+  name: get_device
+  args:
+model:
+  name: build_deeplabv3_cam2bev
+  args:
+    pretrained: False
+    in_channels: 10
+    num_classes: 4
+criterion:
+  name: CEwithstat
+  args:
+optimizer:
+  name: Adam
+  args:
+    lr: 0.0001
+metric:
+  - name: PixelAccuracy
+    args:
+      nclasses: 10
+scheduler:
+  name: StepLR
+  args:
+    step_size: 3
+    gamma: 0.2
+    last_epoch: -1
+data:
+  train:
+    name: Cam2BEVDataset
+    constructor:
+    args:
+      # data_dir: ./preprocess_np/train
+      data_dir: ./preprocess_np/val
+      num_classes: 10
+    loader:
+      name: DataLoader
+      args:
+        batch_size: 2
+        shuffle: True
+        drop_last: True
+  val:
+    name: Cam2BEVDataset
+    constructor:
+    args:
+      data_dir: ./preprocess_np/val
+      num_classes: 10
+    loader:
+      name: DataLoader
+      args:
+        batch_size: 2
+        shuffle: False
+        drop_last: False
