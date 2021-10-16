@@ -1,8 +1,6 @@
 from pathlib import Path
 import numpy as np
-from PIL import Image
 import torch
-from examples.cam2bev.transform import Resize, parse_convert_xml, parse_convert_xml_v2
 from nncore.segmentation.datasets import DATASET_REGISTRY
 
 
@@ -16,30 +14,13 @@ class Cam2BEVDataset(torch.utils.data.Dataset):
     def __init__(self, data_dir: str, num_classes: int = 10, raw: bool = False):
         super().__init__()
         self.data_paths = sorted(list(Path(data_dir).glob('*.npz')))
-        # self.data_dir = Path(data_dir)
         self.num_classes = num_classes
         self.raw = raw
-        # self.homography = sorted(list((self.data_dir / "homography").glob('*.png')))
-        # self.bev_occl = sorted(list((self.data_dir / "bev+occlusion").glob('*.png')))
-        # self.input_pallete = parse_convert_xml_v2('convert_10.xml')
-        # print(self.input_pallete)
-        # assert len(self.homography) == len(self.bev_occl)
 
     def __getitem__(self, idx):
         with np.load(self.data_paths[idx]) as data:
             image = data['image']  # 1, H, W
             mask = data['mask']    # 1, H, W
-        # print(self.homography[idx])
-        # print(self.bev_occl[idx])
-        # homo = Image.open(self.homography[idx])        
-        # bev = Image.open(self.bev_occl[idx])
-
-        # # process here
-        # image = np.array(homo)
-        # mask = np.array(bev)  # H, W, 3
-
-        # image = np.where(image == self.input_pallete[:, 1:])
-
 
         if self.raw:
             return (image, mask)
@@ -52,7 +33,6 @@ class Cam2BEVDataset(torch.utils.data.Dataset):
         return item
 
     def __len__(self):
-        # return len(self.bev_occl)
         return len(self.data_paths)
 
     def _to_one_hot(self, x: torch.Tensor):
@@ -64,8 +44,6 @@ class Cam2BEVDataset(torch.utils.data.Dataset):
 def main():
     dataset = Cam2BEVDataset('./preprocess_np/val', num_classes=10, raw=True)
     print(len(dataset))
-    # raw_image_dir = Path('/media/vinhloiit/Data/DiRA/cam2bev-data_2_F/cam2bev-data/2_F/val/homography')
-    # raw_images = sorted(list(raw_image_dir.glob('*.png')))
 
     import matplotlib as mpl
     mpl.use("Agg")
