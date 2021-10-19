@@ -44,7 +44,9 @@ class Pipeline(object):
         self.device = get_instance(self.cfg["device"])
         print(self.device)
 
-        self.transform = get_instance_recursively(self.transform_cfg, registry=TRANSFORM_REGISTRY)
+        self.transform = None
+        if self.transform_cfg is not None:
+            self.transform = get_instance_recursively(self.transform_cfg, registry=TRANSFORM_REGISTRY)
 
         self.train_dataloader, self.val_dataloader, self.train_dataset, self.val_dataset = self.get_data(
             self.cfg["data"], self.transform, return_dataset=False
@@ -107,12 +109,15 @@ class Pipeline(object):
         for m in metric.values():
             m.summary()
 
-    def get_data(self, cfg, transform: Dict[str, Callable], return_dataset=False):
+    def get_data(self, cfg, transform: Optional[Dict[str, Callable]] = None, return_dataset=False):
         def get_single_data(cfg, transform, stage: str = 'train'):
             assert stage in cfg['dataset'].keys(), f"{stage} is not in dataset config"
             assert stage in cfg['loader'].keys(), f"{stage} is not in loader config"
 
-            dataset = get_instance(cfg['dataset'][stage], registry=DATASET_REGISTRY, transform=transform[stage])
+            if transform is None:
+                dataset = get_instance(cfg['dataset'][stage], registry=DATASET_REGISTRY)
+            else:
+                dataset = get_instance(cfg['dataset'][stage], registry=DATASET_REGISTRY, transform=transform[stage])
             dataloader = get_dataloader(cfg['loader'][stage], dataset)
             return dataloader, dataset
 
@@ -131,8 +136,9 @@ class Pipeline(object):
             val_sz = len(dataset) - train_sz
             assert val_sz > 0, f'validation size must be greater than 0. val_sz = {val_sz}'
             train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
-            train_dataset.dataset.transform = transform['train']
-            val_dataset.dataset.transform = transform['val']
+            if transform is not None:
+                train_dataset.dataset.transform = transform['train']
+                val_dataset.dataset.transform = transform['val']
             train_dataloader = get_dataloader(cfg['loader']['train'], train_dataset)
             val_dataloader = get_dataloader(cfg['loader']['val'], val_dataset)
 
