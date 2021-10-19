@@ -1,11 +1,11 @@
 from pathlib import Path
 
+from torch.utils.data import DataLoader
+from torchvision.utils import make_grid, save_image
+
 from nncore.segmentation.datasets import DATASET_REGISTRY
 from nncore.segmentation.utils import tensor2cmap
 from nncore.utils.utils import inverse_normalize_batch
-from torch.utils.data import DataLoader
-from torchvision.utils import save_image, make_grid
-
 
 if __name__ == "__main__":
     dataset = DATASET_REGISTRY.get('LyftDataset.from_folder')(
@@ -33,4 +33,3 @@ if __name__ == "__main__":
 
         if i == 0:
             break
-

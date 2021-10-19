@@ -187,11 +187,11 @@ train.py
 
 ```python
 
-from nncore.opt import opts
+from nncore.opt import Opts
 from nncore.pipeline import Pipeline
 
 if __name__ == "__main__":
-    opt = opts(cfg_path="'cfg/opt.yaml").parse()
+    opt = Opts(cfg_path="'cfg/opt.yaml").parse()
     train_pipeline = Pipeline(opt)
     train_pipeline.fit()
 

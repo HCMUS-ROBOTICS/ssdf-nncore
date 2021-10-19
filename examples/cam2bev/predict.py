@@ -10,18 +10,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+from dataset import Cam2BEVDataset  # noqa
+from learner import Cam2BEVLearner  # noqa
+from model import build_deeplabv3_cam2bev  # noqa
+from PIL import Image
+from tqdm import tqdm
+from transform import ColorEncoding, OneHotEncoding, Resize, parse_convert_xml
+
 from nncore.segmentation.models import MODEL_REGISTRY
 from nncore.utils.device import detach, get_device
 from nncore.utils.getter import get_instance
 from nncore.utils.loading import load_yaml
 from nncore.utils.utils import load_model
-from PIL import Image
-from tqdm import tqdm
-
-from dataset import Cam2BEVDataset  # noqa
-from learner import Cam2BEVLearner  # noqa
-from model import build_deeplabv3_cam2bev  # noqa
-from transform import ColorEncoding, OneHotEncoding, Resize, parse_convert_xml
 
 
 class SegmentationModel(nn.Module):

@@ -1,8 +1,9 @@
 from typing import Any, Dict, Optional
 
 import torch
-from nncore.core.metrics.metric_template import Metric
+
 from nncore.core.metrics import METRIC_REGISTRY
+from nncore.core.metrics.metric_template import Metric
 
 
 @METRIC_REGISTRY.register()
@@ -10,7 +11,7 @@ class PixelAccuracy(Metric):
 
     """Pixel accuracy metric
 
-    Segmentation multi classes metric 
+    Segmentation multi classes metric
 
     Args:
         nclasses (int): number of classé
@@ -55,4 +56,3 @@ class PixelAccuracy(Metric):
 
     def summary(self):
         print(f"Pixel Accuracy: {self.value():.6f}")
-

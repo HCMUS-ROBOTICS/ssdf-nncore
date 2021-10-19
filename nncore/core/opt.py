@@ -7,7 +7,7 @@ from typing import Dict
 import yaml
 
 
-class opts(object):
+class Opts(object):
     def __init__(self, cfg_path: str):
 
         with open(cfg_path, "r") as f:
@@ -102,10 +102,8 @@ class opts(object):
 
         opt.gpus_str = opt.gpus
         opt.gpus = list(map(int, opt.gpus.split(",")))
-        opt.save_dir = (
-            Path(opt.save_dir)
-            / f'{opt.id}_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}'
-        )
+        output_name = f'{opt.id}_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}'
+        opt.save_dir = Path(opt.save_dir) / output_name
         if opt.debug > 0:
             opt.num_workers = 0
             opt.batch_size = 1
@@ -113,4 +111,3 @@ class opts(object):
             opt.master_batch_size = -1
         print(f"The output will be saved to {opt.save_dir}")
         return opt
-

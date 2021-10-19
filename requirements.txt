@@ -1,6 +1,6 @@
 numpy
-pytorch 
-tensorboard 
+pytorch
+tensorboard
 albumentations
 torchvision
-requests 
+requests

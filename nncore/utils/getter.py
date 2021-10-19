@@ -1,9 +1,8 @@
 from torch.optim import SGD, Adam, RMSprop
 from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR
 from torch.utils.data import DataLoader, random_split
+
 from nncore.core.models.wrapper import ModelWithLoss
-from nncore.core.datasets import DATASET_REGISTRY
-from nncore.core.metrics import METRIC_REGISTRY
 from nncore.utils.device import get_device
 
 
@@ -58,9 +57,7 @@ def get_dataloader(cfg, dataset):
     return dataloader
 
 
-
 def get_dataset_size(ratio: float, dataset_sz: int):
     val_sz = max(1, int(ratio * dataset_sz))
     train_sz = dataset_sz - val_sz
     return train_sz, val_sz
-

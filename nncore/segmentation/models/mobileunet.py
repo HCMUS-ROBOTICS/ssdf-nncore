@@ -1,10 +1,10 @@
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
-from collections import OrderedDict
 from torchvision.models import mobilenet_v2
 
 from nncore.segmentation.models import MODEL_REGISTRY
-
 
 __all__ = ["MobileUnet"]
 
@@ -117,7 +117,7 @@ class MobileUnet(nn.Module):
         # print((x3.shape, 'x3'))
         x4 = x = self.down4(x)
         # print((x4.shape, 'x4'))
-        x5 = x = self.down5(x)
+        x = self.down5(x)
         # print((x5.shape, 'x5'))
 
         up1 = torch.cat([x4, self.dconv1(x)], dim=1)
@@ -239,4 +239,3 @@ if __name__ == "__main__":
     with torch.no_grad():
         output = model(rand_input)
     print(output.size())
-

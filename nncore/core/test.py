@@ -3,9 +3,10 @@ from torch.nn import Module
 from torch.utils.data.dataloader import DataLoader
 from tqdm.auto import tqdm
 
-from .metrics.metric_template import Metric
-from nncore.utils.meter import AverageValueMeter
 from nncore.utils.device import detach, move_to
+from nncore.utils.meter import AverageValueMeter
+
+from .metrics.metric_template import Metric
 
 
 @torch.no_grad()
@@ -22,7 +23,7 @@ def evaluate(
         m.reset()
     model.eval()
     progress_bar = tqdm(dataloader) if verbose else dataloader
-    for i, batch in enumerate(progress_bar):
+    for _, batch in enumerate(progress_bar):
         # 1: Load inputs and labels
         batch = move_to(batch, device)
 

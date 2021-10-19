@@ -1,11 +1,11 @@
 import torchvision
-from torch.utils.tensorboard import SummaryWriter
 from PIL import Image
+from torch.utils.tensorboard import SummaryWriter
 
 
 class TensorboardLogger:
     def __init__(self, path):
-        assert path != None, "path is None"
+        assert path is not None, "path is None"
         self.writer = SummaryWriter(log_dir=path)
 
     def update_scalar(self, tag, value, step):

@@ -1,18 +1,9 @@
-from . import TRANSFORM_REGISTRY
-
-from albumentations import (
-    SmallestMaxSize,
-    ShiftScaleRotate,
-    RandomCrop,
-    RGBShift,
-    RandomBrightnessContrast,
-    Normalize,
-    Resize,
-    Compose,
-)
-
+from albumentations import (Compose, Normalize, RandomBrightnessContrast,
+                            RandomCrop, Resize, RGBShift, ShiftScaleRotate,
+                            SmallestMaxSize)
 from albumentations.pytorch.transforms import ToTensorV2
 
+from . import TRANSFORM_REGISTRY
 
 TRANSFORM_REGISTRY.register(RandomCrop, prefix='Alb')
 TRANSFORM_REGISTRY.register(RGBShift, prefix='Alb')

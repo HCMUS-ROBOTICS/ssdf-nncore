@@ -1,6 +1,8 @@
 from pathlib import Path
+
 import numpy as np
 import torch
+
 from nncore.segmentation.datasets import DATASET_REGISTRY
 
 
@@ -13,7 +15,7 @@ class Cam2BEVDataset(torch.utils.data.Dataset):
 
     def __init__(self, data_dir: str, num_classes: int = 10, raw: bool = False, transform=None):
         super().__init__()
-        self.data_paths = sorted(list(Path(data_dir).glob('*.npz')))
+        self.data_paths = sorted(Path(data_dir).glob('*.npz'))
         self.num_classes = num_classes
         self.raw = raw
 
@@ -41,6 +43,7 @@ class Cam2BEVDataset(torch.utils.data.Dataset):
         zeros = torch.zeros(*x.size(), self.num_classes, dtype=x.dtype)
         return zeros.scatter(scatter_dim, x_tensor, 1)
 
+
 def main():
     dataset = Cam2BEVDataset('./preprocess_np/val', num_classes=10, raw=True)
     print(len(dataset))
@@ -54,7 +57,7 @@ def main():
     item = dataset[index]
     inputs = item[0].squeeze(0).astype(np.uint8)
     mask = item[1].squeeze(0).astype(np.uint8)
-    plt.figure(figsize=(20,10))
+    plt.figure(figsize=(20, 10))
     plt.subplot(131)
     plt.title('RAW')
     # plt.imshow(raw_image)

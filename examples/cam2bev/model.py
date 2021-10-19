@@ -1,5 +1,6 @@
 import torch
 from torchvision import models
+
 from nncore.segmentation.models import MODEL_REGISTRY
 
 

@@ -29,9 +29,9 @@ class SDataset(torch.utils.data.Dataset):
     Attributes:
         from_list(**args): Create dataset from list
         from_folder(**args): Create dataset from folder path
-    
-    Examples: 
-    
+
+    Examples:
+
         dataset = SDataset.from_folder(
             root='./data',
             mask_folder_name='masks',
@@ -64,17 +64,18 @@ class SDataset(torch.utils.data.Dataset):
         self.img_transform = (
             tf.Compose([tf.Resize(self.image_size)] + transform)
             if transform is not None
-            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor()])
         )
         self.msk_transform = (
             tf.Compose([tf.Resize(self.image_size)] + m_transform)
             if m_transform is not None
-            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor(),])
+            else tf.Compose([tf.Resize(self.image_size), tf.ToTensor()])
         )
 
-        assert len(self.list_rgb) == len(
-            self.list_mask
-        ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
+        assert len(self.list_rgb) == len(self.list_mask), (
+            f"Image list and mask list should be the same number of images,"
+            f"but are {len(self.list_rgb)} and {len(self.list_mask)}"
+        )
         # self.list_depth = get_images_list(self.img_folder, self.extension)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -125,7 +126,8 @@ class SDataset(torch.utils.data.Dataset):
         Args:
             rgb_path_ls (Optional[List[str]], optional): full image paths list. Defaults to None.
             mask_path_ls (Optional[List[str]], optional): full label paths list. Defaults to None.
-            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
+            test (bool, optional): Option using for inference mode.
+            If True, __get_item__ does not return label. Defaults to False.
             transform (Optional[List], optional): rgb transform. Defaults to None.
             m_transform (Optional[List], optional): label transform. Defaults to None.
             image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224)..
@@ -162,7 +164,8 @@ class SDataset(torch.utils.data.Dataset):
             image_folder_name (str): image folder name
             mask_folder_name (str): label folder name
             extension (str, optional): image file type extenstion. Defaults to "png".
-            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
+            test (bool, optional): Option using for inference mode.
+            If True, __get_item__ does not return label. Defaults to False.
             transform (Optional[List], optional): rgb transform. Defaults to None.
             m_transform (Optional[List], optional): label transform. Defaults to None.
             image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224).
@@ -187,4 +190,3 @@ class SDataset(torch.utils.data.Dataset):
             image_size=image_size,
             sample=sample,
         )
-
