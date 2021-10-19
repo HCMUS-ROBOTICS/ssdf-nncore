@@ -22,3 +22,4 @@ opts:
   verbose: True
   seed: 123
   cfg_pipeline: ./pipeline.yaml
+  cfg_transform: ./transform.yml

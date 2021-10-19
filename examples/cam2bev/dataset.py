@@ -11,7 +11,7 @@ class Cam2BEVDataset(torch.utils.data.Dataset):
     Ref: https://github.com/ika-rwth-aachen/Cam2BEV
     """
 
-    def __init__(self, data_dir: str, num_classes: int = 10, raw: bool = False):
+    def __init__(self, data_dir: str, num_classes: int = 10, raw: bool = False, transform=None):
         super().__init__()
         self.data_paths = sorted(list(Path(data_dir).glob('*.npz')))
         self.num_classes = num_classes

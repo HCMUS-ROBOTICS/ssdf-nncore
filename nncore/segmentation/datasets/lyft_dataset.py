@@ -4,10 +4,6 @@ import torch
 from torch import Tensor
 from glob import glob
 
-# from torchvision import transforms as tf
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
-
 import matplotlib.pyplot as plt
 from nncore.core.datasets import DATASET_REGISTRY
 
@@ -41,8 +37,6 @@ class LyftDataset(torch.utils.data.Dataset):
         rgb_path_ls: List[str],
         mask_path_ls: List[str],
         transform: Optional[List] = None,
-        m_transform: Optional[List] = None,
-        image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
         sample: bool = False,
     ):
@@ -51,14 +45,7 @@ class LyftDataset(torch.utils.data.Dataset):
         self.list_rgb = rgb_path_ls[:4] if sample else rgb_path_ls
         self.list_mask = mask_path_ls[:4] if sample else mask_path_ls
         self.train = not (test)
-        self.image_size = image_size
-        self.transform = A.Compose(
-            [
-                A.Resize(height=image_size[0], width=image_size[1]),
-                A.Normalize(),
-                ToTensorV2(p=1.0),
-            ]
-        )
+        self.transform = transform
         assert len(self.list_rgb) == len(
             self.list_mask
         ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
@@ -104,8 +91,6 @@ class LyftDataset(torch.utils.data.Dataset):
         rgb_path_ls: Optional[List[str]] = None,
         mask_path_ls: Optional[List[str]] = None,
         transform: Optional[List] = None,
-        m_transform: Optional[List] = None,
-        image_size: Tuple[int, int] = (224, 224),
         test: bool = False,
         sample: bool = False,
     ):
@@ -116,8 +101,6 @@ class LyftDataset(torch.utils.data.Dataset):
             mask_path_ls (Optional[List[str]], optional): full label paths list. Defaults to None.
             test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
             transform (Optional[List], optional): rgb transform. Defaults to None.
-            m_transform (Optional[List], optional): label transform. Defaults to None.
-            image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224)..
         Returns:
             LyftDataset: dataset class
         """
@@ -126,8 +109,6 @@ class LyftDataset(torch.utils.data.Dataset):
             mask_path_ls=mask_path_ls,
             test=test,
             transform=transform,
-            m_transform=m_transform,
-            image_size=image_size,
             sample=sample,
         )
 
@@ -140,8 +121,6 @@ class LyftDataset(torch.utils.data.Dataset):
         extension="png",
         test: bool = False,
         transform: Optional[List] = None,
-        m_transform: Optional[List] = None,
-        image_size: Tuple[int, int] = (224, 224),
         sample: bool = False,
     ):
         r"""From folder method
@@ -153,8 +132,6 @@ class LyftDataset(torch.utils.data.Dataset):
             extension (str, optional): image file type extenstion. Defaults to "png".
             test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
             transform (Optional[List], optional): rgb transform. Defaults to None.
-            m_transform (Optional[List], optional): label transform. Defaults to None.
-            image_size (Tuple[int, int]): image size (width, height). Defaults to (224, 224).
 
         Returns:
             LyftDataset: dataset class
@@ -172,8 +149,6 @@ class LyftDataset(torch.utils.data.Dataset):
             list_mask,
             test=test,
             transform=transform,
-            m_transform=m_transform,
-            image_size=image_size,
             sample=sample,
         )
 
