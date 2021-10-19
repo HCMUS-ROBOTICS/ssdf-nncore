@@ -3,6 +3,7 @@
 #include <initializer_list>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace ssdf::serve {
@@ -34,7 +35,11 @@ class Factory {
     return true;
   }
 
-  std::unique_ptr<IProduct> createObject(const IdentifierType& id) { return nullptr; }
+  template <typename... Args>
+  std::unique_ptr<IProduct> createObject(const IdentifierType& id, Args&&... args) const {
+    int index = associations_.at(id);
+    return creators_.at(index)(std::forward<Args>(args)...);
+  }
 
  private:
   std::vector<Creator> creators_;

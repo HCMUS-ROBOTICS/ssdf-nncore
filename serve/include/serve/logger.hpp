@@ -2,6 +2,8 @@
 #include <NvInfer.h>
 #include <fmt/core.h>
 
+#include <cstdio>
+#include <cstring>
 #include <mutex>
 #include <string_view>
 #include <utility>
@@ -52,7 +54,11 @@ class ILogger {
    public:
     explicit TRTLogger(const serve::ILogger &parent) : parent_(parent) {}
     inline void log(Severity severity, const char *message) noexcept override {
-      parent_.log(severity, message);
+      size_t trt_len = std::strlen(message) + 7;
+      char *trt_msg = new char[trt_len];
+      std::snprintf(trt_msg, trt_len, "[TRT] %s", message);
+      parent_.log(severity, trt_msg);
+      delete[] trt_msg;
     }
 
    private:
