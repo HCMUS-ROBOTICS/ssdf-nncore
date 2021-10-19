@@ -20,6 +20,31 @@ def get_instance(config, registry=None, **kwargs):
     return globals()[config["name"]](**config["args"], **kwargs)
 
 
+def get_instance_recursively(config, registry, **kwargs):
+    if isinstance(config, (list, tuple)):
+        out = [get_instance_recursively(item, registry=registry, **kwargs) for item in config]
+        return out
+    if isinstance(config, dict):
+        if 'name' in config.keys():
+            if registry:
+                args = get_instance_recursively(config.get('args', {}), registry)
+                if args is None:
+                    return registry.get(config['name'])(**kwargs)
+                if isinstance(args, list):
+                    return registry.get(config['name'])(*args, **kwargs)
+                elif isinstance(args, dict):
+                    return registry.get(config['name'])(**args, **kwargs)
+                else:
+                    raise ValueError(f'Unknown type: {type(args)}')
+        else:
+            out = {}
+            for k, v in config.items():
+                out[k] = get_instance_recursively(v, registry=registry, **kwargs)
+            return out
+        return globals()[config["name"]](**config["args"], **kwargs)
+    return config
+
+
 def get_function(name):
     return globals()[name]
 
@@ -32,38 +57,6 @@ def get_dataloader(cfg, dataset):
     dataloader = get_instance(cfg, dataset=dataset, collate_fn=collate_fn)
     return dataloader
 
-
-def get_single_data(cfg, return_dataset=True):
-    dataset = get_instance(cfg, registry=DATASET_REGISTRY)
-    dataloader = get_dataloader(cfg["loader"], dataset)
-    return dataloader, dataset if return_dataset else dataloader
-
-
-def get_data(cfg, return_dataset=False):
-    if cfg.get("train", False) and cfg.get("val", False):
-        train_dataloader, train_dataset = get_single_data(
-            cfg["train"], return_dataset=True
-        )
-        val_dataloader, val_dataset = get_single_data(cfg["val"], return_dataset=True)
-    elif cfg.get("trainval", False):
-        trainval_cfg = cfg["trainval"]
-        # Split dataset train:val = ratio:(1-ratio)
-        ratio = trainval_cfg["test_ratio"]
-        dataset = get_instance(trainval_cfg["dataset"], registry=DATASET_REGISTRY)
-        train_sz, val_sz = get_dataset_size(ratio=ratio, dataset_sz=len(dataset))
-        train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
-        # Get dataloader
-        train_dataloader = get_dataloader(
-            trainval_cfg["loader"]["train"], train_dataset
-        )
-        val_dataloader = get_dataloader(trainval_cfg["loader"]["val"], val_dataset)
-    else:
-        raise Exception("Dataset config is not correctly formatted.")
-    return (
-        (train_dataloader, val_dataloader, train_dataset, val_dataset)
-        if return_dataset
-        else (train_dataloader, val_dataloader)
-    )
 
 
 def get_dataset_size(ratio: float, dataset_sz: int):

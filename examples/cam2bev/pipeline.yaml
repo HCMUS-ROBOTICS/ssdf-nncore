@@ -4,6 +4,7 @@ learner:
 device:
   name: get_device
   args:
+    default: cpu
 model:
   name: build_deeplabv3_cam2bev
   args:
@@ -28,26 +29,25 @@ scheduler:
     gamma: 0.2
     last_epoch: -1
 data:
-  train:
-    name: Cam2BEVDataset
-    constructor:
-    args:
-      # data_dir: ./preprocess_np/train
-      data_dir: ./preprocess_np/val
-      num_classes: 10
-    loader:
+  dataset:
+    train:
+      name: Cam2BEVDataset
+      args:
+        data_dir: ./preprocess_np/train
+        num_classes: 10
+    val:
+      name: Cam2BEVDataset
+      args:
+        data_dir: ./preprocess_np/val
+        num_classes: 10
+  loader:
+    train:
       name: DataLoader
       args:
         batch_size: 2
         shuffle: True
         drop_last: True
-  val:
-    name: Cam2BEVDataset
-    constructor:
-    args:
-      data_dir: ./preprocess_np/val
-      num_classes: 10
-    loader:
+    val:
       name: DataLoader
       args:
         batch_size: 2
