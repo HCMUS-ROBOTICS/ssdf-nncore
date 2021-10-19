@@ -34,17 +34,17 @@ uint32_t getElementSize(nvinfer1::DataType data_type) noexcept {
 
 std::vector<char> loadTimingCacheFile(const std::filesystem::path& file_path,
                                       const ILogger& logger) {
-  std::ifstream iFile(file_path, std::ios::in | std::ios::binary);
-  if (!iFile) {
+  std::ifstream i_file(file_path, std::ios::in | std::ios::binary);
+  if (!i_file) {
     // TODO(all) remove c_str() when std::format is supported
     logger.warn(
         "Could not read timing cache from: {}. A new timing cache will be generated and written.",
         file_path.c_str());
     return {};
   }
-  size_t file_size = std::filesystem::file_size(file_path);
+  auto file_size = std::filesystem::file_size(file_path);
   std::vector<char> content(file_size);
-  iFile.read(content.data(), file_size);
+  i_file.read(content.data(), file_size);
   logger.info("Loaded {} bytes of timing cache from {}", file_size, file_path.c_str());
   return content;
 }
@@ -61,7 +61,7 @@ bool saveEngine(const nvinfer1::IHostMemory& serialized_engine,
 
 nvinfer1::Dims toDims(const std::vector<int>& vec, const ILogger& logger) {
   int limit = static_cast<int>(nvinfer1::Dims::MAX_DIMS);
-  if (static_cast<int>(vec.size()) > limit) {
+  if (vec.size() > limit) {
     logger.warn("Vector too long, only first 8 elements are used in dimension.");
   }
   // Pick first nvinfer1::Dims::MAX_DIMS elements

@@ -1,11 +1,23 @@
 #include "trt/generator.hpp"
 
+#include <NvInfer.h>
 #include <fmt/format.h>
 
+#include <algorithm>
+#include <exception>
+#include <filesystem>
 #include <fstream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include <half.hpp>
 
+#include "serve/logger.hpp"
 #include "trt/calibrator.hpp"
+#include "trt/option.hpp"
 
 namespace ssdf::serve::trt {
 namespace {
@@ -31,8 +43,8 @@ std::unordered_map<std::string, float> readScalesFromCalibrationCache(
   return tensor_scales;
 }
 
-bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float in_range = 2.0f,
-                           float out_range = 4.0f) {
+bool setTensorDynamicRange(const nvinfer1::INetworkDefinition& network, float in_range = 2.0F,
+                           float out_range = 4.0F) {
   // Ensure that all layer inputs have a dynamic range.
   for (int l = 0; l < network.getNbLayers(); ++l) {
     nvinfer1::ILayer* layer{network.getLayer(l)};
@@ -477,7 +489,7 @@ Generator::BuildEnvironment Generator::setupBuildEnvironment(
       }
     }
     config->setInt8Calibrator(
-        new RndInt8Calibrator(1, build_.calibration, logger_, *network, &elem_count));
+        new RndInt8Calibrator(1, build_.calibration, *network, logger_, &elem_count));
   }
 
   if (build_.safe) {

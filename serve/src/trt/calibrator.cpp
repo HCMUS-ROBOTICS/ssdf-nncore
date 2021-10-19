@@ -1,15 +1,23 @@
 #include "trt/calibrator.hpp"
 
+#include <NvInfer.h>
+#include <cuda_runtime_api.h>
+
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
+#include <iterator>
+#include <memory>
 #include <random>
+#include <vector>
 
 #include "serve/device.hpp"
+#include "serve/logger.hpp"
 
 namespace ssdf::serve::trt {
 RndInt8Calibrator::RndInt8Calibrator(int batches, const std::filesystem::path& cache_file,
-                                     const std::shared_ptr<ILogger>& logger,
                                      const nvinfer1::INetworkDefinition& network,
+                                     const std::shared_ptr<ILogger>& logger,
                                      std::vector<int64_t>* elem_count)
     : batches_(batches), current_batch_(0), cache_file_(cache_file), logger_(logger) {
   std::ifstream tryCache(cache_file, std::ios::binary);

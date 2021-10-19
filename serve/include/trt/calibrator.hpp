@@ -13,8 +13,8 @@ namespace ssdf::serve::trt {
 class RndInt8Calibrator : public nvinfer1::IInt8EntropyCalibrator2 {
  public:
   RndInt8Calibrator(int batches, const std::filesystem::path& cache_file,
-                    const std::shared_ptr<ILogger>& logger,
-                    const nvinfer1::INetworkDefinition& network, std::vector<int64_t>* elem_count);
+                    const nvinfer1::INetworkDefinition& network,
+                    const std::shared_ptr<ILogger>& logger, std::vector<int64_t>* elem_count);
   virtual ~RndInt8Calibrator();
 
   bool getBatch(void* bindings[], const char* names[], int nb_bingdinds) noexcept override;

@@ -2,6 +2,7 @@
 #include <NvInfer.h>
 #include <NvOnnxParser.h>
 
+#include <exception>
 #include <filesystem>
 #include <functional>
 #include <memory>
@@ -34,13 +35,13 @@ class Generator {
    * @return nvinfer1::IHostMemory*
    */
   template <typename network_t>
-  std::unique_ptr<nvinfer1::IHostMemory> getSerializedEngine(const network_t& network_def) {
+  nvinfer1::IHostMemory* getSerializedEngine(const network_t& network_def) {
     static_assert(std::is_convertible_v<network_t, std::filesystem::path>);
     std::vector<std::vector<char>> sparse_weights;  // TODO(Ky) move to inside function?
     auto&& [builder, network, config] = this->setupBuildEnvironment(&sparse_weights);
 
     std::unique_ptr<nvonnxparser::IParser> parser{nullptr};
-    if (std::is_convertible_v<network_t, std::filesystem::path>) {
+    if constexpr (std::is_convertible_v<network_t, std::filesystem::path>) {
       const std::filesystem::path& onnx_path{network_def};
       parser.reset(nvonnxparser::createParser(*network, logger_->getTRTLogger()));
       if (!parser->parseFromFile(onnx_path.c_str(), static_cast<int>(logger_->getCurrentLevel()))) {
@@ -55,9 +56,9 @@ class Generator {
     std::unique_ptr<nvinfer1::ITimingCache> timing_cache{nullptr};
     // Try to load cache from file. Create a fresh cache if the file doesn't exist
     if (build_.timing_cache_mode == TimingCacheMode::kGLOBAL) {
-      std::vector<char> loaded_cache = loadTimingCacheFile(build_.timing_cache_file, *logger_);
-      timing_cache.reset(config->createTimingCache(static_cast<const void*>(loaded_cache.data()),
-                                                   loaded_cache.size()));
+      auto loaded_cache = loadTimingCacheFile(build_.timing_cache_file, *logger_);
+      timing_cache.reset(
+          config->createTimingCache(static_cast<void*>(loaded_cache.data()), loaded_cache.size()));
       if (!timing_cache) {
         logger_->fatal("TimingCache creation failed");
         return nullptr;
@@ -73,8 +74,7 @@ class Generator {
     }
     config->setProfileStream(*profile_stream);
 
-    return std::unique_ptr<nvinfer1::IHostMemory>{
-        builder->buildSerializedNetwork(*network, *config)};
+    return builder->buildSerializedNetwork(*network, *config);
   }
 
  private:
@@ -92,8 +92,6 @@ class Generator {
 
   BuildOptions build_;
   SystemOptions system_;
-  // We need getTRTLogger method so do not use const
-  // cpplint prefers pointer over reference
-  std::shared_ptr<ILogger> logger_;
+  const std::shared_ptr<ILogger> logger_;
 };
 }  // namespace ssdf::serve::trt
