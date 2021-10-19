@@ -4,6 +4,7 @@ learner:
 device:
   name: get_device
   args:
+    default: cpu
 model:
   name: deeplabv3_resnet50
   args:
@@ -26,28 +27,62 @@ scheduler:
     step_size: 3
     gamma: 0.2
     last_epoch: -1
-data:
-  trainval:
-    test_ratio: 0.2
-    dataset:
-      name: LyftDataset.from_folder
+# data:
+#   dataset:
+#     train:
+#       name: LyftDataset.from_folder
+#       args:
+#         sample: False
+#         root: '.'
+#         test: True
+#         mask_folder_name: CameraSeg
+#         image_folder_name: CameraRGB
+#         extension: png
+#     val:
+#       name: LyftDataset.from_folder
+#       args:
+#         sample: False
+#         root: '.'
+#         test: True
+#         mask_folder_name: CameraSeg
+#         image_folder_name: CameraRGB
+#         extension: png
+#   loader:
+#     train:
+#       name: DataLoader
+#       args:
+#         batch_size: 2
+#         shuffle: True
+#         drop_last: True
+#     val:
+#       name: DataLoader
+#       args:
+#         batch_size: 2
+#         shuffle: False
+#         drop_last: False
+data: # instruction here 
+  splits:
+    train: 0.6
+    val: 0.4
+  dataset:
+    name: LyftDataset.from_folder
+    args:
+      sample: False
+      root: '.'
+      test: True
+      mask_folder_name: CameraSeg
+      image_folder_name: CameraRGB
+      extension: png
+  loader:
+    train:
+      name: DataLoader
       args:
-        sample: True
-        root: '.'
-        test: True
-        mask_folder_name: CameraSeg
-        image_folder_name: CameraRGB
-        extension: png
-    loader:
-      train:
-        name: DataLoader
-        args:
-          batch_size: 2
-          shuffle: True
-          drop_last: True
-      val:
-        name: DataLoader
-        args:
-          batch_size: 2
-          shuffle: False
-          drop_last: False
+        batch_size: 2
+        shuffle: True
+        drop_last: True
+    val:
+      name: DataLoader
+      args:
+        batch_size: 2
+        shuffle: False
+        drop_last: False

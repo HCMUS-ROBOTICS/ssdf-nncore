@@ -20,6 +20,31 @@ def get_instance(config, registry=None, **kwargs):
     return globals()[config["name"]](**config["args"], **kwargs)
 
 
+def get_instance_recursively(config, registry, **kwargs):
+    if isinstance(config, (list, tuple)):
+        out = [get_instance_recursively(item, registry=registry, **kwargs) for item in config]
+        return out
+    if isinstance(config, dict):
+        if 'name' in config.keys():
+            if registry:
+                args = get_instance_recursively(config.get('args', {}), registry)
+                if args is None:
+                    return registry.get(config['name'])(**kwargs)
+                if isinstance(args, list):
+                    return registry.get(config['name'])(*args, **kwargs)
+                elif isinstance(args, dict):
+                    return registry.get(config['name'])(**args, **kwargs)
+                else:
+                    raise ValueError(f'Unknown type: {type(args)}')
+        else:
+            out = {}
+            for k, v in config.items():
+                out[k] = get_instance_recursively(v, registry=registry, **kwargs)
+            return out
+        return globals()[config["name"]](**config["args"], **kwargs)
+    return config
+
+
 def get_function(name):
     return globals()[name]
 
@@ -32,11 +57,6 @@ def get_dataloader(cfg, dataset):
     dataloader = get_instance(cfg, dataset=dataset, collate_fn=collate_fn)
     return dataloader
 
-
-def get_single_data(cfg, return_dataset=True):
-    dataset = get_instance(cfg, registry=DATASET_REGISTRY)
-    dataloader = get_dataloader(cfg["loader"], dataset)
-    return dataloader, dataset if return_dataset else dataloader
 
 
 def get_dataset_size(ratio: float, dataset_sz: int):

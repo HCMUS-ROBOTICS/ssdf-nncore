@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Callable, Dict, Optional
 
 import yaml
 from nncore.core.models.wrapper import ModelWithLoss
@@ -10,8 +10,9 @@ from nncore.segmentation.datasets import DATASET_REGISTRY
 from nncore.segmentation.learner import LEARNER_REGISTRY
 from nncore.segmentation.metrics import METRIC_REGISTRY
 from nncore.segmentation.models import MODEL_REGISTRY
+from nncore.core.transforms.albumentation import TRANSFORM_REGISTRY
 from nncore.utils.getter import (get_dataloader, get_dataset_size,
-                                 get_instance, get_single_data)
+                                 get_instance, get_instance_recursively)
 from nncore.utils.loading import load_yaml
 from torch.utils.data.dataset import random_split
 from torchvision.transforms import transforms as tf
@@ -20,7 +21,10 @@ from torchvision.transforms import transforms as tf
 class Pipeline(object):
     """docstring for Pipeline."""
 
-    def __init__(self, opt: opts, cfg_path: Optional[str] = None):
+    def __init__(self,
+                 opt: opts,
+                 cfg_path: Optional[str] = None,
+                 transform_cfg_path: Optional[str] = None):
         super(Pipeline, self).__init__()
         self.opt = opt
         assert (cfg_path is not None) or (
@@ -30,11 +34,20 @@ class Pipeline(object):
             load_yaml(cfg_path) if cfg_path is not None else load_yaml(opt.cfg_pipeline)
         )
 
+        assert (transform_cfg_path is not None) or (
+            opt.cfg_transform is not None
+        ), "learner params is none, \ please create config file follow default format."
+        self.transform_cfg = (
+            load_yaml(transform_cfg_path) if transform_cfg_path is not None else load_yaml(opt.cfg_transform)
+        )
+
         self.device = get_instance(self.cfg["device"])
         print(self.device)
 
-        self.train_dataloader, self.val_dataloader = self.get_data(
-            self.cfg["data"], return_dataset=False
+        self.transform = get_instance_recursively(self.transform_cfg, registry=TRANSFORM_REGISTRY)
+
+        self.train_dataloader, self.val_dataloader, self.train_dataset, self.val_dataset = self.get_data(
+            self.cfg["data"], self.transform, return_dataset=False
         )
 
         model = get_instance(self.cfg["model"], registry=MODEL_REGISTRY).to(self.device)
@@ -94,28 +107,33 @@ class Pipeline(object):
         for m in metric.values():
             m.summary()
 
-    def get_data(self, cfg, return_dataset=False):
-        if cfg.get("train", False) and cfg.get("val", False):
-            train_dataloader, train_dataset = get_single_data(
-                cfg["train"], return_dataset=True
-            )
-            val_dataloader, val_dataset = get_single_data(cfg["val"], return_dataset=True)
-        elif cfg.get("trainval", False):
-            trainval_cfg = cfg["trainval"]
-            # Split dataset train:val = ratio:(1-ratio)
-            ratio = trainval_cfg["test_ratio"]
-            dataset = get_instance(trainval_cfg["dataset"], registry=DATASET_REGISTRY)
-            train_sz, val_sz = get_dataset_size(ratio=ratio, dataset_sz=len(dataset))
+    def get_data(self, cfg, transform: Dict[str, Callable], return_dataset=False):
+        def get_single_data(cfg, transform, stage: str = 'train'):
+            assert stage in cfg['dataset'].keys(), f"{stage} is not in dataset config"
+            assert stage in cfg['loader'].keys(), f"{stage} is not in loader config"
+
+            dataset = get_instance(cfg['dataset'][stage], registry=DATASET_REGISTRY, transform=transform[stage])
+            dataloader = get_dataloader(cfg['loader'][stage], dataset)
+            return dataloader, dataset
+
+        train_dataloader, train_dataset = None, None
+        if ('train' in cfg['dataset']) and ('train' in cfg['loader']):
+            train_dataloader, train_dataset = get_single_data(cfg, transform, 'train')
+
+        val_dataloader, val_dataset = None, None
+        if ('val' in cfg['dataset']) and ('val' in cfg['loader']):
+            val_dataloader, val_dataset = get_single_data(cfg, transform, 'val')
+
+        if train_dataloader is None and val_dataloader is None:
+            dataset = get_instance(cfg['dataset'], registry=DATASET_REGISTRY, transform=None)
+            train_sz, val_sz = cfg['splits']['train'], cfg['splits']['val']
+            train_sz = int(len(dataset) * train_sz)
+            val_sz = len(dataset) - train_sz
+            assert val_sz > 0, f'validation size must be greater than 0. val_sz = {val_sz}'
             train_dataset, val_dataset = random_split(dataset, [train_sz, val_sz])
-            # Get dataloader
-            train_dataloader = get_dataloader(
-                trainval_cfg["loader"]["train"], train_dataset
-            )
-            val_dataloader = get_dataloader(trainval_cfg["loader"]["val"], val_dataset)
-        else:
-            raise Exception("Dataset config is not correctly formatted.")
-        return (
-            (train_dataloader, val_dataloader, train_dataset, val_dataset)
-            if return_dataset
-            else (train_dataloader, val_dataloader)
-        )
+            train_dataset.dataset.transform = transform['train']
+            val_dataset.dataset.transform = transform['val']
+            train_dataloader = get_dataloader(cfg['loader']['train'], train_dataset)
+            val_dataloader = get_dataloader(cfg['loader']['val'], val_dataset)
+
+        return (train_dataloader, val_dataloader, train_dataset, val_dataset)

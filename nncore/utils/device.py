@@ -2,8 +2,10 @@ import torch
 from typing import Any
 
 
-def get_device() -> torch.device:
-    return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+def get_device(default=None) -> torch.device:
+    if default is None:
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return default
 
 
 def move_to(obj: Any, device: torch.device):
