@@ -1,10 +1,6 @@
 learner:
   name: Cam2BEVLearner
   args:
-device:
-  name: get_device
-  args:
-    default: cpu
 model:
   name: build_deeplabv3_cam2bev
   args:

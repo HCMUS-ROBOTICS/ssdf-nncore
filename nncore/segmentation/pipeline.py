@@ -2,55 +2,58 @@ import logging
 from typing import Callable, Dict, Optional
 
 import yaml
+from torch.utils.data.dataset import random_split
+
 from nncore.core.models.wrapper import ModelWithLoss
-from nncore.core.opt import opts
+from nncore.core.opt import Opts
+from nncore.core.optim import OPTIM_REGISTRY
+from nncore.core.optim.lr_scheduler import SCHEDULER_REGISTRY
 from nncore.core.test import evaluate
+from nncore.core.transforms.albumentation import TRANSFORM_REGISTRY
 from nncore.segmentation.criterion import CRITERION_REGISTRY
 from nncore.segmentation.datasets import DATASET_REGISTRY
 from nncore.segmentation.learner import LEARNER_REGISTRY
 from nncore.segmentation.metrics import METRIC_REGISTRY
 from nncore.segmentation.models import MODEL_REGISTRY
-from nncore.core.transforms.albumentation import TRANSFORM_REGISTRY
-from nncore.utils.getter import (get_dataloader, get_dataset_size,
-                                 get_instance, get_instance_recursively)
+from nncore.utils.getter import (get_dataloader, get_instance,
+                                 get_instance_recursively)
 from nncore.utils.loading import load_yaml
-from torch.utils.data.dataset import random_split
-from torchvision.transforms import transforms as tf
 
 
 class Pipeline(object):
     """docstring for Pipeline."""
 
     def __init__(self,
-                 opt: opts,
+                 opt: Opts,
                  cfg_path: Optional[str] = None,
                  transform_cfg_path: Optional[str] = None):
         super(Pipeline, self).__init__()
         self.opt = opt
         assert (cfg_path is not None) or (
             opt.cfg_pipeline is not None
-        ), "learner params is none, \ please create config file follow default format. \n You could find an example in nn/configs/default/learner.yaml"
+        ), ("learner params is none, \n please create config file follow default format.")
         self.cfg = (
             load_yaml(cfg_path) if cfg_path is not None else load_yaml(opt.cfg_pipeline)
         )
 
         assert (transform_cfg_path is not None) or (
             opt.cfg_transform is not None
-        ), "learner params is none, \ please create config file follow default format."
-        self.transform_cfg = (
-            load_yaml(transform_cfg_path) if transform_cfg_path is not None else load_yaml(opt.cfg_transform)
-        )
+        ), "learner params is none, \n please create config file follow default format."
+        if transform_cfg_path is not None:
+            self.transform_cfg = load_yaml(transform_cfg_path)
+        else:
+            self.transform_cfg = load_yaml(opt.cfg_transform)
 
-        self.device = get_instance(self.cfg["device"])
+        self.device = opt.device
         print(self.device)
 
         self.transform = None
         if self.transform_cfg is not None:
-            self.transform = get_instance_recursively(self.transform_cfg, registry=TRANSFORM_REGISTRY)
+            self.transform = get_instance_recursively(self.transform_cfg,
+                                                      registry=TRANSFORM_REGISTRY)
 
-        self.train_dataloader, self.val_dataloader, self.train_dataset, self.val_dataset = self.get_data(
-            self.cfg["data"], self.transform, return_dataset=False
-        )
+        data = self.get_data(self.cfg["data"], self.transform, return_dataset=False)
+        self.train_dataloader, self.val_dataloader, self.train_dataset, self.val_dataset = data
 
         model = get_instance(self.cfg["model"], registry=MODEL_REGISTRY).to(self.device)
         criterion = get_instance(self.cfg["criterion"], registry=CRITERION_REGISTRY).to(self.device)
@@ -60,11 +63,11 @@ class Pipeline(object):
             mcfg, registry=METRIC_REGISTRY) for mcfg in self.cfg["metric"]}
 
         self.optimizer = get_instance(
-            self.cfg["optimizer"], params=self.model.parameters()
+            self.cfg["optimizer"], registry=OPTIM_REGISTRY, params=self.model.parameters()
         )
 
         self.scheduler = get_instance(
-            self.cfg["scheduler"], optimizer=self.optimizer)
+            self.cfg["scheduler"], registry=SCHEDULER_REGISTRY, optimizer=self.optimizer)
 
         self.learner = get_instance(
             self.cfg["learner"],
@@ -117,7 +120,9 @@ class Pipeline(object):
             if transform is None:
                 dataset = get_instance(cfg['dataset'][stage], registry=DATASET_REGISTRY)
             else:
-                dataset = get_instance(cfg['dataset'][stage], registry=DATASET_REGISTRY, transform=transform[stage])
+                dataset = get_instance(cfg['dataset'][stage],
+                                       registry=DATASET_REGISTRY,
+                                       transform=transform[stage])
             dataloader = get_dataloader(cfg['loader'][stage], dataset)
             return dataloader, dataset
 

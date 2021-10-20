@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 import torch.onnx
 import yaml
+
 from nncore.utils import getter
 
 if __name__ == "__main__":

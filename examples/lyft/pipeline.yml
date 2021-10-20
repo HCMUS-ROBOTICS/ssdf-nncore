@@ -4,7 +4,7 @@ learner:
 device:
   name: get_device
   args:
-    default: cpu
+    default: cuda
 model:
   name: deeplabv3_resnet50
   args:
@@ -60,7 +60,7 @@ scheduler:
 #         batch_size: 2
 #         shuffle: False
 #         drop_last: False
-data: # instruction here 
+data: # instruction here
   splits:
     train: 0.6
     val: 0.4

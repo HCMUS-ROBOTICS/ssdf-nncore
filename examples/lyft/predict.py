@@ -1,18 +1,18 @@
-from re import I
 import sys
-from importlib import import_module
 
+# from importlib import import_module
+# from re import I
 
 sys.path.insert(0, "../../")
 
-from nncore.utils.getter import get_instance
-from nncore.utils import load_model, load_yaml, get_device, image_batch_show
+from pathlib import Path
+
 from nncore.models.wrapper import SegmentationModel
-from nncore.utils.segmentation import multi_class_prediction
 from torchvision.utils import save_image
 
-
-from pathlib import Path
+from nncore.utils import get_device, image_batch_show, load_model, load_yaml
+from nncore.utils.getter import get_instance
+from nncore.utils.segmentation import multi_class_prediction
 
 if __name__ == "__main__":
     checkpoint_folder = Path("./runs/default_2021_09_18-20_28_41/checkpoints")

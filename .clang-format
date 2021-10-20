@@ -1,0 +1,11 @@
+BasedOnStyle: Google
+ColumnLimit: 100
+IncludeCategories:
+  - Regex: .h>
+    Priority: 1
+  - Regex: <[^.]*>
+    Priority: 2
+  - Regex: .hpp>
+    Priority: 3
+  - Regex: .h"
+    Priority: 4

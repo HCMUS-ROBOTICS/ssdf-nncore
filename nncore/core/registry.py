@@ -4,6 +4,7 @@ from typing import Any, Dict, Iterable, Iterator, Tuple
 
 from tabulate import tabulate
 
+
 class Registry(Iterable[Tuple[str, Any]]):
     """
     The registry that provides name -> object mapping, to support third-party

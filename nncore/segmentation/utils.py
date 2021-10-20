@@ -1,19 +1,19 @@
-""" 
-Python implementation of the color map function for the PASCAL VOC data set. 
-Official Matlab version can be found in the PASCAL VOC devkit 
+"""
+Python implementation of the color map function for the PASCAL VOC data set.
+Official Matlab version can be found in the PASCAL VOC devkit
 http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html#devkit
 """
 import numpy as np
 import torch
 
 
-def color_map(N=256, normalized=False):
+def color_map(n=256, normalized=False):
     def bitget(byteval, idx):
         return (byteval & (1 << idx)) != 0
 
     dtype = "float32" if normalized else "uint8"
-    cmap = np.zeros((N, 3), dtype=dtype)
-    for i in range(N):
+    cmap = np.zeros((n, 3), dtype=dtype)
+    for i in range(n):
         r = g = b = 0
         c = i
         for j in range(8):
@@ -34,14 +34,14 @@ def binary_prediction(output: torch.Tensor, thresh: float = 0.5) -> torch.Tensor
 
 def np2cmap(np_image):
     """
-    Using Dot product to compute the color batch 
+    Using Dot product to compute the color batch
 
-    1. Create a new color axis from H x W x B to H x W x B x 1 
+    1. Create a new color axis from H x W x B to H x W x B x 1
     2. Multiply the color axis by the image tensor H x W x B x 1 and 1 x C (3 with RGB)
-    3. Sum the color axis to get the final color map H x W x B x C 
+    3. Sum the color axis to get the final color map H x W x B x C
 
 
-    input: numpy batch H x W x B 
+    input: numpy batch H x W x B
     output: color map batch  H x W x B x C
     """
 

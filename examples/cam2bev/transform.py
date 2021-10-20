@@ -78,7 +78,7 @@ class Resize():
             h = src_w
 
         # then resize to target shape
-        img = image[y:y+h, x:x+w]
+        img = image[y:y + h, x:x + w]
         img = cv2.resize(
             img, (self.size[1], self.size[0]), interpolation=self.interpolation)
         return img
@@ -91,11 +91,11 @@ class Resize():
 
 
 def parse_convert_xml(conversion_file_path):
-    defRoot = xmlET.parse(conversion_file_path).getroot()
+    def_root = xmlET.parse(conversion_file_path).getroot()
     one_hot_palette = {}
-    for idx, defElement in enumerate(defRoot.findall("SLabel")):
-        color = np.fromstring(defElement.get("fromColour"), dtype=int, sep=" ")
-        class_idx = int(defElement.get("toValue"))
+    for def_element in def_root.findall("SLabel"):
+        color = np.fromstring(def_element.get("fromColour"), dtype=int, sep=" ")
+        class_idx = int(def_element.get("toValue"))
         d = one_hot_palette.get(class_idx, [])
         d.append(color)
         one_hot_palette[class_idx] = d
@@ -104,11 +104,11 @@ def parse_convert_xml(conversion_file_path):
 
 
 def parse_convert_xml_v2(conversion_file_path):
-    defRoot = xmlET.parse(conversion_file_path).getroot()
+    def_root = xmlET.parse(conversion_file_path).getroot()
     color_pallete = []
-    for idx, defElement in enumerate(defRoot.findall("SLabel")):
-        color = np.fromstring(defElement.get("fromColour"), dtype=int, sep=" ")
-        class_idx = int(defElement.get("toValue"))
+    for def_element in def_root.findall("SLabel"):
+        color = np.fromstring(def_element.get("fromColour"), dtype=int, sep=" ")
+        class_idx = int(def_element.get("toValue"))
         color_pallete.append([class_idx, *color])
 
     color_pallete = np.array(color_pallete)

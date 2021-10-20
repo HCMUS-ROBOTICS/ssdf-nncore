@@ -1,27 +1,27 @@
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import torch
-from nncore.utils.device import get_device
-from nncore.utils.utils import load_checkpoint, save_model
-from torch import device
 from torch.cuda.amp import GradScaler, autocast
 from torch.nn import Module
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
+from nncore.utils.device import get_device
+from nncore.utils.loading import load_checkpoint, save_model
+
 from ..metrics import Metric
 from ..test import evaluate
-from .baselearner import BaseLearner
 from . import LEARNER_REGISTRY
+from .baselearner import BaseLearner
 
 
 @LEARNER_REGISTRY.register()
 class SupervisedLearner(BaseLearner):
-    r"""SupervisedLearner class 
+    r"""SupervisedLearner class
 
-    Support training and evaluate strategy for supervise learning 
+    Support training and evaluate strategy for supervise learning
 
     Args:
         cfg (Any): [description]
@@ -30,8 +30,8 @@ class SupervisedLearner(BaseLearner):
         val_data (DataLoader): validation dataloader
         device (torch.device): training device
         model (Module): model to optimize
-        scheduler (lr_scheduler): learning rate scheduler  
-        optimizer (torch.optim.Optimizer): optimizer 
+        scheduler (lr_scheduler): learning rate scheduler
+        optimizer (torch.optim.Optimizer): optimizer
         metrics (Dict[str, Metric]): evaluate metrics
     """
 
@@ -44,13 +44,13 @@ class SupervisedLearner(BaseLearner):
         model: Module,
         scheduler,
         optimizer: Optimizer,
-        device: device = get_device(),
+        device: Optional[torch.device] = None,
     ):
         super().__init__(
             save_dir=cfg.save_dir,
             train_data=train_data,
             val_data=val_data,
-            device=device,
+            device=device or get_device(),
             model=model,
             metrics=metrics,
             scheduler=scheduler,
@@ -117,7 +117,7 @@ class SupervisedLearner(BaseLearner):
     ) -> None:
         r"""Save checkpoint method
 
-        Saving 
+        Saving
         -   model state dict
         -   optimizer state dict
         Args:
@@ -132,11 +132,9 @@ class SupervisedLearner(BaseLearner):
         }
 
         if val_loss < self.best_loss:
-            logging.info(
-                f"Loss is improved from {self.best_loss: .6f} to {val_loss: .6f}. Saving weights...",
-            )
-            save_model(data, self.save_dir /
-                       "checkpoints" / Path("best_loss.pth"))
+            logging.info("Loss is improved from {:.6f} to {:.6f}. Saving weights...",
+                         self.best_loss, val_loss)
+            save_model(data, self.save_dir / "checkpoints" / Path("best_loss.pth"))
             # Update best_loss
             self.best_loss = val_loss
         else:
@@ -144,12 +142,10 @@ class SupervisedLearner(BaseLearner):
 
         for k in self.metric.keys():
             if val_metric[k] > self.best_metric[k]:
-                logging.info(
-                    f"{k} is improved from {self.best_metric[k]: .6f} to {val_metric[k]: .6f}. Saving weights...",
-                )
+                logging.info("{} is improved from {:.6f} to {:.6f}. Saving weights...",
+                             k, self.best_metric[k], val_metric[k])
                 save_model(
-                    data, self.save_dir / "checkpoints" /
-                    Path(f"best_metric_{k}.pth")
+                    data, self.save_dir / "checkpoints" / Path(f"best_metric_{k}.pth")
                 )
                 self.best_metric[k] = val_metric[k]
             else:

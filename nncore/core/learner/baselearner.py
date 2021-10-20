@@ -3,33 +3,35 @@ from typing import Any, Dict, Optional
 
 import numpy as np
 import torch
-from nncore.core.logger import TensorboardLogger
-from nncore.core.metrics import Metric
-from nncore.utils.device import detach, move_to
-from nncore.utils.meter import AverageValueMeter
 from torch.cuda.amp import GradScaler, autocast
 from torch.nn import Module
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm as tqdm
 
+from nncore.core.logger import TensorboardLogger
+from nncore.core.metrics import Metric
+from nncore.utils.device import detach, move_to
+from nncore.utils.meter import AverageValueMeter
+
 
 class BaseLearner:
-    r"""BaseLearner class 
+    r"""BaseLearner class
 
     Abstract learner class, support training and evaluate strategy.
 
     Args:
-        cfg (Any): [description]
-        save_dir (str): save folder directory path
-        train_data (DataLoader): train dataloader
-        val_data (DataLoader): validation dataloader
-        device (torch.device): training device
-        model (Module): model to optimize
-        scheduler (lr_scheduler): learning rate scheduler  
-        optimizer (torch.optim.Optimizer): optimizer 
-        metrics (Dict[str, Metric]): evaluate metrics
-        criterion (Optional[Module], optional): Loss function. Defaults to None.
-        verbose (bool, optional): if verbose is False, model does not log anything during training process. Defaults to True.
+        cfg: [description]
+        save_dir: save folder directory path
+        train_data: train dataloader
+        val_data: validation dataloader
+        device: training device
+        model: model to optimize
+        scheduler: learning rate scheduler
+        optimizer: optimizer
+        metrics: evaluate metrics
+        criterion: Loss function. Defaults to None.
+        verbose: control whether to log during training process.
+            Defaults to True
     """
 
     def __init__(

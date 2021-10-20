@@ -1,7 +1,7 @@
 from typing import Dict
 
 from torch import nn
-from torch.nn import functional as F
+
 from nncore.segmentation.criterion import CRITERION_REGISTRY
 
 
@@ -18,6 +18,6 @@ class CEwithstat(nn.Module):
         target = batch["mask"] if isinstance(batch, Dict) else batch
         # custom label is storaged in batch["mask"]
         # print("CEwithstat: pred:", pred.shape, "target:", target.shape)
-        loss = F.cross_entropy(pred, target)
+        loss = nn.functional.cross_entropy(pred, target)
         loss_dict = {"loss": loss}
         return loss, loss_dict

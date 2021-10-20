@@ -1,27 +1,22 @@
-from typing import Any, Dict
+from typing import Dict
 
 import numpy as np
 import torch
 import torchvision
-from nncore.core.learner.supervisedlearner import SupervisedLearner
-from nncore.core.metrics.metric_template import Metric
-from nncore.utils.device import get_device
-from nncore.utils.utils import inverse_normalize_batch, tensor2plt
-from torch import device
-from torch.nn import Module
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
+from nncore.core.learner.supervisedlearner import SupervisedLearner
 from nncore.segmentation.learner import LEARNER_REGISTRY
+from nncore.segmentation.utils import color_map
+from nncore.utils.utils import tensor2plt
 
 
 @LEARNER_REGISTRY.register()
 class Cam2BEVLearner(SupervisedLearner):
-    r"""Segmentation learner class 
+    r"""Segmentation learner class
 
-    Support training and evaluate strategy for supervise learning 
-    
+    Support training and evaluate strategy for supervise learning
+
     Args:
         cfg (Any): [description]
         save_dir (str): save folder directory path
@@ -29,32 +24,10 @@ class Cam2BEVLearner(SupervisedLearner):
         val_data (DataLoader): validation dataloader
         device (torch.device): training device
         model (Module): model to optimize
-        scheduler (lr_scheduler): learning rate scheduler  
-        optimizer (torch.optim.Optimizer): optimizer 
+        scheduler (lr_scheduler): learning rate scheduler
+        optimizer (torch.optim.Optimizer): optimizer
         metrics (Dict[str, Metric]): evaluate metrics
     """
-
-    def __init__(
-        self,
-        cfg: Any,
-        train_data: DataLoader,
-        val_data: DataLoader,
-        metrics: Dict[str, Metric],
-        model: Module,
-        scheduler,
-        optimizer: Optimizer,
-        device: device = get_device(),
-    ):
-        super().__init__(
-            cfg=cfg,
-            train_data=train_data,
-            val_data=val_data,
-            metrics=metrics,
-            model=model,
-            scheduler=scheduler,
-            optimizer=optimizer,
-            device=device,
-        )
 
     def save_result(self, pred, batch, stage: str):
         images = batch['input']     # B,n_class,H,W
@@ -100,11 +73,11 @@ class Cam2BEVLearner(SupervisedLearner):
 
     def _np2cmap(self, np_image):
         """
-        Using Dot product to compute the color batch 
-        1. Create a new color axis from H x W x B to H x W x B x 1 
+        Using Dot product to compute the color batch
+        1. Create a new color axis from H x W x B to H x W x B x 1
         2. Multiply the color axis by the image tensor H x W x B x 1 and 1 x C (3 with RGB)
-        3. Sum the color axis to get the final color map H x W x B x C 
-        input: numpy batch H x W x B 
+        3. Sum the color axis to get the final color map H x W x B x C
+        input: numpy batch H x W x B
         output: color map batch  H x W x B x C
         """
         cmap = color_map()[:, np.newaxis, :]
@@ -113,29 +86,3 @@ class Cam2BEVLearner(SupervisedLearner):
         for i in range(1, cmap.shape[0]):
             new_im += np.dot(np_image == i, cmap[i])
         return new_im
-
-
-def color_map(N=256, normalized=False):
-    """ 
-    Python implementation of the color map function for the PASCAL VOC data set. 
-    Official Matlab version can be found in the PASCAL VOC devkit 
-    http://host.robots.ox.ac.uk/pascal/VOC/voc2012/index.html#devkit
-    """
-    def bitget(byteval, idx):
-        return (byteval & (1 << idx)) != 0
-
-    dtype = "float32" if normalized else "uint8"
-    cmap = np.zeros((N, 3), dtype=dtype)
-    for i in range(N):
-        r = g = b = 0
-        c = i
-        for j in range(8):
-            r = r | (bitget(c, 0) << 7 - j)
-            g = g | (bitget(c, 1) << 7 - j)
-            b = b | (bitget(c, 2) << 7 - j)
-            c = c >> 3
-
-        cmap[i] = np.array([r, g, b])
-
-    cmap = cmap / 255 if normalized else cmap
-    return cmap

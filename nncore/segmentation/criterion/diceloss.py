@@ -2,7 +2,6 @@ from typing import Dict
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from . import CRITERION_REGISTRY
 
@@ -13,11 +12,11 @@ Source: https://github.com/hubutui/DiceLoss-PyTorch/blob/master/loss.py
 
 @CRITERION_REGISTRY.register()
 class BinaryDiceLoss(nn.Module):
-    """
+    r"""
     Dice loss of binary class
     Args:
         smooth: A float number to smooth loss, and avoid NaN error, default: 1
-        p: Denominator value: \sum{x^p} + \sum{y^p}, default: 2
+        p: Denominator value: :math:`\sum{x^p} + \sum{y^p}`, default: 2
         predict: A tensor of shape [batch_size, W, H]
         target: A tensor of shape same with predict
         reduction: Reduction method to apply, return mean over batch if 'mean',
@@ -42,8 +41,7 @@ class BinaryDiceLoss(nn.Module):
         target = target.contiguous().view(target.shape[0], -1)
 
         num = torch.sum(torch.mul(predict, target), dim=1) + self.smooth
-        den = torch.sum(predict.pow(self.p) +
-                        target.pow(self.p), dim=1) + self.smooth
+        den = torch.sum(predict.pow(self.p) + target.pow(self.p), dim=1) + self.smooth
 
         loss = 1 - num / den
 
@@ -80,7 +78,7 @@ class DiceLoss(nn.Module):
         assert predict.shape == target.shape, "predict & target shape do not match"
         dice = BinaryDiceLoss(**self.kwargs)
         total_loss = 0
-        predict = F.softmax(predict, dim=1)
+        predict = nn.functional.softmax(predict, dim=1)
 
         for i in range(target.shape[1]):
             if i != self.ignore_index:

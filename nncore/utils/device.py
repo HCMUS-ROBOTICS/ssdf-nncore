@@ -1,5 +1,6 @@
-import torch
 from typing import Any
+
+import torch
 
 
 def get_device(default=None) -> torch.device:

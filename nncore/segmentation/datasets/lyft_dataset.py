@@ -1,10 +1,11 @@
+from glob import glob
 from pathlib import Path
 from typing import List, Optional, Tuple
-import torch
-from torch import Tensor
-from glob import glob
 
 import matplotlib.pyplot as plt
+import torch
+from torch import Tensor
+
 from nncore.core.datasets import DATASET_REGISTRY
 
 
@@ -16,9 +17,9 @@ class LyftDataset(torch.utils.data.Dataset):
     Attributes:
         from_list(**args): Create dataset from list
         from_folder(**args): Create dataset from folder path
-    
-    Examples: 
-    
+
+    Examples:
+
         dataset = LyftDataset.from_folder(
             root='./data',
             mask_folder_name='masks',
@@ -46,9 +47,10 @@ class LyftDataset(torch.utils.data.Dataset):
         self.list_mask = mask_path_ls[:4] if sample else mask_path_ls
         self.train = not (test)
         self.transform = transform
-        assert len(self.list_rgb) == len(
-            self.list_mask
-        ), f"Image list and mask list should be the same number of images, but are {len(self.list_rgb)} and {len(self.list_mask)}"
+        assert len(self.list_rgb) == len(self.list_mask), (
+            f"Image list and mask list should be the same number of images,"
+            f"but are {len(self.list_rgb)} and {len(self.list_mask)}"
+        )
         # self.list_depth = get_images_list(self.img_folder, self.extension)
 
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
@@ -77,7 +79,7 @@ class LyftDataset(torch.utils.data.Dataset):
 
         Args:
             folder_path (Path): folder path
-            extension (str): file extension
+            extension: file extension
 
         Returns:
             List[str]: full path list of items in folder
@@ -97,10 +99,11 @@ class LyftDataset(torch.utils.data.Dataset):
         """From list method
 
         Args:
-            rgb_path_ls (Optional[List[str]], optional): full image paths list. Defaults to None.
-            mask_path_ls (Optional[List[str]], optional): full label paths list. Defaults to None.
-            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
-            transform (Optional[List], optional): rgb transform. Defaults to None.
+            rgb_path_ls: full image paths list. Defaults to None.
+            mask_path_ls: full label paths list. Defaults to None.
+            test: Option using for inference mode. If True, `__getitem__`
+                does not return label. Defaults to False.
+            transform: rgb transform. Defaults to None.
         Returns:
             LyftDataset: dataset class
         """
@@ -126,12 +129,13 @@ class LyftDataset(torch.utils.data.Dataset):
         r"""From folder method
 
         Args:
-            root (str): folder root
-            image_folder_name (str): image folder name
-            mask_folder_name (str): label folder name
-            extension (str, optional): image file type extenstion. Defaults to "png".
-            test (bool, optional): Option using for inference mode. if True, __get_item__ does not return label. Defaults to False.
-            transform (Optional[List], optional): rgb transform. Defaults to None.
+            root: folder root
+            image_folder_name: image folder name
+            mask_folder_name: label folder name
+            extension: image file type extenstion. Defaults to "png".
+            test: Option using for inference mode. if True, __getitem__ does not return label.
+                Defaults to False.
+            transform: rgb transform. Defaults to None.
 
         Returns:
             LyftDataset: dataset class
@@ -151,5 +155,6 @@ class LyftDataset(torch.utils.data.Dataset):
             transform=transform,
             sample=sample,
         )
+
 
 DATASET_REGISTRY._do_register('LyftDataset.from_folder', LyftDataset.from_folder)

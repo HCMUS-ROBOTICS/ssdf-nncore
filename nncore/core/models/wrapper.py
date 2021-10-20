@@ -1,5 +1,5 @@
-from typing import Optional
 from torch import nn
+
 from . import MODEL_REGISTRY
 
 
@@ -11,16 +11,16 @@ class ModelWithLoss(nn.Module):
         model (Module): Base Model without loss
         loss (Module): Base loss function with stat
 
-    Example: 
+    Example:
 
         from nncore.model.segmentation import MobileUnet
-        from nncore.model.loss import CEwithstat 
+        from nncore.model.loss import CEwithstat
         from nncore.model import ModelWithLoss
 
         model = MobileUnet()
         loss = CEwithstat(nclasses = 2)
 
-        modelwithloss = ModelWithLoss(model = model, loss = loss) 
+        modelwithloss = ModelWithLoss(model = model, loss = loss)
     """
 
     def __init__(self, model: nn.Module, criterion: nn.Module):
