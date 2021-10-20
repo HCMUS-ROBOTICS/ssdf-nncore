@@ -1,20 +1,14 @@
-from typing import Any, Dict, Optional
+from typing import Dict
 
 import numpy as np
 import torch
 import torchvision
-from torch import device
-from torch.nn import Module
-from torch.optim import Optimizer
-from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 
 from nncore.core.learner.supervisedlearner import SupervisedLearner
-from nncore.core.metrics.metric_template import Metric
 from nncore.segmentation.learner import LEARNER_REGISTRY
 from nncore.segmentation.utils import color_map
-from nncore.utils.device import get_device
-from nncore.utils.utils import inverse_normalize_batch, tensor2plt
+from nncore.utils.utils import tensor2plt
 
 
 @LEARNER_REGISTRY.register()

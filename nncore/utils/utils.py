@@ -1,36 +1,13 @@
 import copy
-from typing import Any, Dict, List
+from typing import Any, List
 
 import matplotlib.pyplot as plt
 import torch
-import yaml
 from torch.nn import Module
 
 
 def copy_model(model: Module) -> Module:
     return copy.deepcopy(model)
-
-
-def save_model(data: Dict[str, Any], path: str, verbose: bool = True):
-    torch.save(data, path)
-    if verbose:
-        print("Model saved")
-
-
-def load_checkpoint(path: str, map_location="cpu"):
-    return torch.load(path, map_location=map_location)
-
-
-def load_model(
-    model: Module,
-    path: str,
-    verbose: bool = True,
-    map_location="cpu",
-    key="model_state_dict",
-):
-    model.load_state_dict(torch.load(path, map_location=map_location)[key])
-    if verbose:
-        print("Model loaded")
 
 
 def tensor2plt(obj: torch.Tensor, title: List[Any]):

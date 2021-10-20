@@ -4,7 +4,7 @@ learner:
 device:
   name: get_device
   args:
-    default: cpu
+    default: cuda
 model:
   name: deeplabv3_resnet50
   args:

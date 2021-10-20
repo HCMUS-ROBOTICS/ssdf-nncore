@@ -6,6 +6,6 @@ from nncore.core.opt import Opts
 from nncore.segmentation.pipeline import Pipeline
 
 if __name__ == "__main__":
-    opt = Opts(cfg_path="./opt.yaml").parse()
-    train_pipeline = Pipeline(opt)
+    opts = Opts.parse('opt.yaml')
+    train_pipeline = Pipeline(opts)
     train_pipeline.fit()

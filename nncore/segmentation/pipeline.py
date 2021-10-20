@@ -6,6 +6,8 @@ from torch.utils.data.dataset import random_split
 
 from nncore.core.models.wrapper import ModelWithLoss
 from nncore.core.opt import Opts
+from nncore.core.optim import OPTIM_REGISTRY
+from nncore.core.optim.lr_scheduler import SCHEDULER_REGISTRY
 from nncore.core.test import evaluate
 from nncore.core.transforms.albumentation import TRANSFORM_REGISTRY
 from nncore.segmentation.criterion import CRITERION_REGISTRY
@@ -42,7 +44,7 @@ class Pipeline(object):
         else:
             self.transform_cfg = load_yaml(opt.cfg_transform)
 
-        self.device = get_instance(self.cfg["device"])
+        self.device = opt.device
         print(self.device)
 
         self.transform = None
@@ -61,11 +63,11 @@ class Pipeline(object):
             mcfg, registry=METRIC_REGISTRY) for mcfg in self.cfg["metric"]}
 
         self.optimizer = get_instance(
-            self.cfg["optimizer"], params=self.model.parameters()
+            self.cfg["optimizer"], registry=OPTIM_REGISTRY, params=self.model.parameters()
         )
 
         self.scheduler = get_instance(
-            self.cfg["scheduler"], optimizer=self.optimizer)
+            self.cfg["scheduler"], registry=SCHEDULER_REGISTRY, optimizer=self.optimizer)
 
         self.learner = get_instance(
             self.cfg["learner"],

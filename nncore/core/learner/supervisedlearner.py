@@ -9,7 +9,7 @@ from torch.optim import Optimizer
 from torch.utils.data import DataLoader
 
 from nncore.utils.device import get_device
-from nncore.utils.utils import load_checkpoint, save_model
+from nncore.utils.loading import load_checkpoint, save_model
 
 from ..metrics import Metric
 from ..test import evaluate
