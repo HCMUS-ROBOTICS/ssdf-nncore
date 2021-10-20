@@ -232,13 +232,20 @@ this repo
 
 more information [here](examples/segmentation)
 
-## Export to ONNX
+## Perform inference
 
-Use the script provided in `examples`, then run below command
+### Export PyTorch checkpoint to ONNX
+
+Use the script provided in `examples`, then run the below command
 
 ```bash
-PYTHONPATH=.. python3 torch2onnx.py <checkpoint> --in_shape 1 3 224 224 --inputs input --outputs output
+python3 torch2onnx.py <checkpoint> --in_shape 1 3 224 224 --inputs input --outputs output
 ```
+
+### Performing inference
+
+See [serve](serve) library
+
 
 ## A general task
 
