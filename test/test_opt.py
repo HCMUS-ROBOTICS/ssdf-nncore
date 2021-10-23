@@ -47,17 +47,21 @@ def test_opts_device_cpu(tmp_path, minimal_cfg, gpus_flag):
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='cuda is not available')
 @pytest.mark.parametrize(
     'device_idx',
-    [0, 1, 2, 3, -1]
+    [0, 1, 2, 3, -1, -2]
 )
 def test_opts_device_index_int(tmp_path, minimal_cfg, device_idx):
     cfg_path = tmp_path / "config.yaml"
     minimal_cfg['opts']['gpus'] = device_idx
     _save_cfg(cfg_path, minimal_cfg)
-    opts = Opts.parse(cfg_path)
-    if device_idx == -1:
-        assert opts.device == 'cuda'
+    if device_idx >= -1:
+        opts = Opts.parse(cfg_path)
+        if device_idx == -1:
+            assert opts.device == 'cuda'
+        else:
+            assert opts.device == f'cuda:{device_idx}'
     else:
-        assert opts.device == f'cuda:{device_idx}'
+        with pytest.raises(ValueError):
+            opts = Opts.parse(cfg_path)
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='cuda is not available')
