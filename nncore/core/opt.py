@@ -4,6 +4,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Union
 
+import torch
+
 from nncore.utils.loading import load_yaml
 
 
@@ -115,15 +117,19 @@ class Opts(Namespace):
         # --gpus -> use all
         # --gpus [index] 0, 1, 2 -> use 0,1,2 (3 gpus)
         # --gpus
-        if args.get('gpus', None) is None:
+        if args.get('gpus', None) is None or not torch.cuda.is_available():
             opts.device = 'cpu'
-        elif args['gpus'] == -1:
-            opts.device = 'cuda'
-        elif args['gpus'] >= 0:
+        elif isinstance(args['gpus'], int):
+            if args['gpus'] == -1:
+                opts.device = 'cuda'
+            elif args['gpus'] >= 0:
+                opts.device = f'cuda:{args["gpus"]}'
+            else:
+                raise ValueError('Invalid GPU index')
+        elif isinstance(args['gpus'], list):
+            opts.device = f'cuda:{",".join(map(str, args["gpus"]))}'
+        elif isinstance(args["gpus"], str):
             opts.device = f'cuda:{args["gpus"]}'
-        else:
-            # isinstance(opts['gpus'], (list, str)):
-            raise NotImplementedError()
 
         output_name = f'{opts.id}_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}'
         opts.save_dir = Path(opts.save_dir) / output_name
