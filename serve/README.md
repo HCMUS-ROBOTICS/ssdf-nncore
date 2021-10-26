@@ -41,11 +41,35 @@ void Logger::flushLog(Level level, std::string_view message) const {
 2. Create a `Generator` instance with those options, then use `generator.getSerializedEngine` to allocate memory for the network. Right now it could only take ONNX model path; using TensorRT's layers is under development. This function return raw pointer, **remember to delete it after saving the model** (or use smart pointer)
 3. Use `saveEngine` function in [utils.hpp](include/trt/utils.hpp) to save allocated model to file.
 
+```cpp
+// Suppose that we use the Logger above
+auto logger = std::make_shared<Logger>();
+
+// Use default options
+Generator generator{BuildOptions(), SystemOptions(), logger};
+std::unique_ptr<nvinfer1::IHostMemory> serialized_engine{generator.getSerializedEngine("path_to_onnx")};
+saveEngine(*serialized_engine, "path_to_save_engine");
+
+```
+
 ## Perform inference
 
 1. Create a `Session` instance by using `InferenceOptions`. This class will automatically choose the right backend using model's file extension
 2. Call `session.doInference` to perform synchronous inference. This function receives a map, which its key is input layer's name and value are host's pointer + size in bytes.
 The output results in also a map of (layer's name, buffer in host)
+
+```cpp
+auto logger = std::make_shared<Logger>();
+InferenceOptions options;
+options.model_path = "path_to_model";
+session = Session(options, logger);
+
+// mat is cv::Mat image, 1 input layer named "input"
+auto outputs = session_->doInference({{"input", {mat.data, mat.total() * mat.elemSize()}}});
+
+std::vector<uint8_t> &out_tensor = outputs["output"];
+// out_tensor is a buffer, please cast it to expected output type
+```
 
 ## Add custom backend
 
