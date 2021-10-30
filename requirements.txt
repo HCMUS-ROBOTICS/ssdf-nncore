@@ -6,3 +6,4 @@ albumentations
 torchvision==0.11.1+cpu
 requests
 tabulate
+tqdm
