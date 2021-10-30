@@ -18,11 +18,8 @@ class PixelAccuracy(Metric):
         ignore_index (Optional[Any], optional): [description]. Defaults to None.
     """
 
-    def __init__(self, nclasses: int, ignore_index: Optional[Any] = None):
+    def __init__(self, ignore_index: Optional[Any] = None):
         super().__init__()
-        assert nclasses > 0
-
-        self.nclasses = nclasses
         self.ignore_index = ignore_index
         self.reset()
 

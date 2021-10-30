@@ -19,3 +19,7 @@ def _get_device():
         devices.append('cuda')
 
     return devices
+
+
+def _isclose(a: float, b: float, eps: float = 1e-6):
+    return abs(a - b) <= eps

@@ -17,7 +17,6 @@ optimizer:
 metric:
   - name: PixelAccuracy
     args:
-      nclasses: 10
 scheduler:
   name: StepLR
   args:
