@@ -111,7 +111,7 @@ class SemanticLearner(SupervisedLearner):
         input: numpy batch H x W x B
         output: color map batch  H x W x B x C
         """
-        cmap = color_map()[:, np.newaxis, :]
+        cmap = color_map(label_format='voc')[:, np.newaxis, :]
         np_image = np_image[..., np.newaxis]
         new_im = np.dot(np_image == 0, cmap[0])
         for i in range(1, cmap.shape[0]):
