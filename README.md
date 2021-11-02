@@ -1,6 +1,10 @@
 <div align="center">
 
+
 **Collection of tasks for fast baseline solving in self-driving problems with deep learning. The offical language support is Pytorch**
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![](https://github.com/HCMUS-ROBOTICS/ssdf-nncore/actions/workflows/workflows.yml/badge.svg)
 
 ---
 
