@@ -99,6 +99,7 @@ class Pipeline(object):
         save_cfg = {}
         save_cfg["opt"] = vars(opt)
         save_cfg["pipeline"] = self.cfg
+        save_cfg['transform'] = self.transform_cfg
         save_cfg["opt"]["save_dir"] = str(save_cfg["opt"]["save_dir"])
         with open(
             self.learner.save_dir / "checkpoints" / "config.yaml", "w"
