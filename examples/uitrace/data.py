@@ -1,8 +1,8 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import torchvision
 from torch.utils.data import DataLoader
+from torchvision.utils import make_grid
 
 from nncore.core.transforms.albumentation import TRANSFORM_REGISTRY
 from nncore.segmentation.datasets import DATASET_REGISTRY
@@ -13,9 +13,9 @@ from nncore.utils.utils import inverse_normalize_batch, tensor2plt
 
 if __name__ == "__main__":
     dataset = DATASET_REGISTRY.get("LyftDataset.from_folder")(
-        root="../../../Lyft/",
-        mask_folder_name="CameraSeg",
-        image_folder_name="CameraRGB",
+        root="../../../unitydatasets/FPT_Dataset_v2/",
+        mask_folder_name="SemanticSegmentation_Front",
+        image_folder_name="RGB_Front",
         test=False,
     )
     transform_cfg = load_yaml("transform.yml")
@@ -29,9 +29,9 @@ if __name__ == "__main__":
         target = data["mask"]
 
         im = inverse_normalize_batch(im)
-        target = tensor2cmap(target, label_format="voc")
-        im = torchvision.utils.make_grid(im, nrow=2, normalize=True)
-        target = torchvision.utils.make_grid(target, nrow=2, normalize=False)
+        target = tensor2cmap(target, label_format="cityscape")
+        im = make_grid(im, nrow=2, normalize=True)
+        target = make_grid(target, nrow=2, normalize=False)
         save_dir = Path("./")
 
         im = tensor2plt(im, title="inputs")
