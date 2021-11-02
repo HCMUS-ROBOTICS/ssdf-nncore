@@ -11,7 +11,9 @@
 <p align="center">
   <a href="#what-is-nncore">About</a> •
   <a href="#installation">Installation</a> •
-  <a href="#tasks">Tasks</a> •
+  <a href="#examples">Examples</a> •
+  <a href="#perform-inference">Inference</a> •
+  <a href="#contribution">Contribution</a> •
   <a href="#license">License</a>
 </p>
 
@@ -53,8 +55,8 @@ pip install -e .
 
 ---
 
-## Example
-
+## Examples
+We provide some examples here. You can use the interactive version by the colab notebooks belows. For more detail, you can refer to [this folder](examples)
 - Segmentation on LyftDataset [![Segmentation on LyftDataset](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/HCMUS-ROBOTICS/ssdf-nncore-examples/blob/main/segmentation/Lyft.ipynb)
 - Segmentation on UITDataset [![Segmentation on UITDataset](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/HCMUS-ROBOTICS/ssdf-nncore-examples/blob/main/segmentation/UIT.ipynb)
 
