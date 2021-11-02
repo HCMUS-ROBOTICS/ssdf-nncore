@@ -11,3 +11,5 @@ tmp/
 *.zip
 *.onnx
 *.trt
+*.egg-info
+*.eggs
