@@ -9,7 +9,7 @@ model:
   name: deeplabv3_resnet50
   args:
     pretrained: False
-    num_classes: 14
+    num_classes: 30
 criterion:
   name: CEwithstat
   args:
