@@ -49,30 +49,10 @@ pip install -e .
 
 ---
 
-## Tasks
+## Example
 
-### Example 1: Semantic Segmentation
-
-Setup data have the same structure below.
-
-```
-this repo
-│
-└─── nn
-│    └─── data
-│       └─── images
-│            │     00000.jpg
-│            │     00001.jpg
-│            │     ...
-│       └─── mask
-│            │     00000.jpg
-│            │     00001.jpg
-│            │     ...
-|    train.py
-|    test.py
-```
-
-more information [here](examples/segmentation)
+- Segmentation on LyftDataset [![Segmentation on LyftDataset](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/HCMUS-ROBOTICS/ssdf-nncore-examples/blob/main/segmentation/Lyft.ipynb)
+- Segmentation on UITDataset [![Segmentation on LyftDataset](https://colab.research.google.com/assets/colab-badge.svg)]()
 
 ## Perform inference
 
