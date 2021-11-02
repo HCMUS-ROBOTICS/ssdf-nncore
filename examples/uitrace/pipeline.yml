@@ -66,11 +66,11 @@ data: # instruction here
   dataset:
     name: LyftDataset.from_folder
     args:
-      sample: False
-      root: "../../../unitydatasets/FPT_Dataset_v2/"
+      sample: True
+      root: "./data"
       test: True
-      mask_folder_name: SemanticSegmentation_Front
-      image_folder_name: RGB_Front
+      mask_folder_name: SemanticSegmentation
+      image_folder_name: RGB
       extension: png
   loader:
     train:
