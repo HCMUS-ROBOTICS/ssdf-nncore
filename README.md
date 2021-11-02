@@ -56,7 +56,7 @@ pip install -e .
 ## Example
 
 - Segmentation on LyftDataset [![Segmentation on LyftDataset](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/HCMUS-ROBOTICS/ssdf-nncore-examples/blob/main/segmentation/Lyft.ipynb)
-- Segmentation on UITDataset [![Segmentation on LyftDataset](https://colab.research.google.com/assets/colab-badge.svg)]()
+- Segmentation on UITDataset [![Segmentation on UITDataset](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/HCMUS-ROBOTICS/ssdf-nncore-examples/blob/main/segmentation/UIT.ipynb)
 
 ## Perform inference
 
