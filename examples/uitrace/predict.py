@@ -22,10 +22,10 @@ if __name__ == "__main__":
     device = get_device()
     print(device)
     datasets = TestImageDataset(img_ls=[
-        "../../../Lyft/CameraRGB/F61-1.png",
-        "../../../Lyft/CameraRGB/F61-1.png",
-        "../../../Lyft/CameraRGB/F61-1.png",
-        "../../../Lyft/CameraRGB/F61-1.png",
+        "../../../unitydatasets/UIT/1.png",
+        "../../../unitydatasets/UIT/2.png",
+        "../../../unitydatasets/UIT/3.png",
+        "../../../unitydatasets/UIT/4.png",
     ], alb_transform=tf)
     model.to(device)
     dataloader = torch.utils.data.DataLoader(datasets, batch_size=2, shuffle=False, num_workers=0)

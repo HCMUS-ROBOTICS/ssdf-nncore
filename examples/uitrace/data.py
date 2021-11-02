@@ -13,9 +13,9 @@ from nncore.utils.utils import inverse_normalize_batch, tensor2plt
 
 if __name__ == "__main__":
     dataset = DATASET_REGISTRY.get("LyftDataset.from_folder")(
-        root="../../../unitydatasets/FPT_Dataset_v2/",
-        mask_folder_name="SemanticSegmentation_Front",
-        image_folder_name="RGB_Front",
+        root="./data/",
+        mask_folder_name="SemanticSegmentation",
+        image_folder_name="RGB",
         test=False,
     )
     transform_cfg = load_yaml("transform.yml")
