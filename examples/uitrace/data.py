@@ -21,8 +21,8 @@ if __name__ == "__main__":
     transform_cfg = load_yaml("transform.yml")
     transform = get_instance_recursively(transform_cfg, registry=TRANSFORM_REGISTRY)
     dataset.transform = transform["train"]
-    im = dataset[0]["input"]
-    mask = dataset[0]["mask"]
+    im = dataset[1]["input"]
+    mask = dataset[1]["mask"]
     dataloader = DataLoader(dataset, batch_size=4, shuffle=False, num_workers=4)
     for data in dataloader:
         im = data["input"]

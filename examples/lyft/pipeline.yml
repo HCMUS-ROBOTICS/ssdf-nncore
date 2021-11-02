@@ -66,8 +66,8 @@ data: # instruction here
   dataset:
     name: LyftDataset.from_folder
     args:
-      sample: False
-      root: '.'
+      sample: True
+      root: "../../../Lyft/"
       test: True
       mask_folder_name: CameraSeg
       image_folder_name: CameraRGB
