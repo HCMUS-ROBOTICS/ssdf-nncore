@@ -42,11 +42,15 @@ class LyftDataset(torch.utils.data.Dataset):
         sample: bool = False,
     ):
         super(LyftDataset, self).__init__()
-
+        rgb_path_ls.sort()
+        mask_path_ls.sort()
         self.list_rgb = rgb_path_ls[:4] if sample else rgb_path_ls
         self.list_mask = mask_path_ls[:4] if sample else mask_path_ls
         self.train = not (test)
         self.transform = transform
+        assert (
+            len(self.list_rgb) > 0
+        ), f"Data length must be greater than 0, got {len(self.list_rgb)}"
         assert len(self.list_rgb) == len(self.list_mask), (
             f"Image list and mask list should be the same number of images,"
             f"but are {len(self.list_rgb)} and {len(self.list_mask)}"
@@ -56,7 +60,7 @@ class LyftDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx: int) -> Tuple[Tensor, Tensor]:
 
         im, mask = (
-            plt.imread(self.list_rgb[idx]),
+            plt.imread(self.list_rgb[idx])[:, :, :3],
             plt.imread(self.list_mask[idx])[:, :, 0],
         )
         mask = (mask * 255).astype(int)  # convert label to 0 - 1 (W, H)
@@ -148,13 +152,7 @@ class LyftDataset(torch.utils.data.Dataset):
         list_rgb = LyftDataset.get_images_list(img_folder, extension)
         list_mask = LyftDataset.get_images_list(lbl_folder, extension)
 
-        return cls(
-            list_rgb,
-            list_mask,
-            test=test,
-            transform=transform,
-            sample=sample,
-        )
+        return cls(list_rgb, list_mask, test=test, transform=transform, sample=sample,)
 
 
-DATASET_REGISTRY._do_register('LyftDataset.from_folder', LyftDataset.from_folder)
+DATASET_REGISTRY._do_register("LyftDataset.from_folder", LyftDataset.from_folder)
