@@ -37,8 +37,8 @@ To install **nncore** and develop locally
 
 ```bash
 git clone https://github.com/HCMUS-ROBOTICS/ssdf-nncore nncore
-cd nncore/nn
-pip install -r requirements.txt
+cd nncore
+pip install -e .
 ```
 
 See [Installation]() for more options.
@@ -262,5 +262,22 @@ Predictions from vision tasks can be visualized through an [Tensorboard](https:/
 ## References
 
 Nothing here yet
+
+## Contribution
+
+If you want to contribute to `nncore`, please follow the code style as well as make sure that the test cases are passed in your pull request.
+
+**To run code-format**
+```bash
+pip install pre-commit
+pre-commit install
+pre-commit run -a
+```
+
+**To run tests**
+```bash
+pip install pytest
+python -m pytest test/
+```
 
 ## License
