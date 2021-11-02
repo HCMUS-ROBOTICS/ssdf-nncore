@@ -1,45 +1,49 @@
-import sys
-
-# from importlib import import_module
-# from re import I
-
-sys.path.insert(0, "../../")
-
 from pathlib import Path
 
-from nncore.models.wrapper import SegmentationModel
-from torchvision.utils import save_image
+import torch
+from matplotlib import pyplot as plt
+from torchvision.utils import make_grid
 
-from nncore.utils import get_device, image_batch_show, load_model, load_yaml
-from nncore.utils.getter import get_instance
-from nncore.utils.segmentation import multi_class_prediction
+from nncore.core.datasets import TestImageDataset
+from nncore.core.transforms.albumentation import TRANSFORM_REGISTRY
+from nncore.segmentation.models import MODEL_REGISTRY
+from nncore.segmentation.utils import tensor2cmap
+from nncore.utils.device import get_device
+from nncore.utils.getter import get_instance, get_instance_recursively
+from nncore.utils.loading import load_model, load_yaml
+from nncore.utils.utils import inverse_normalize_batch, tensor2plt
 
 if __name__ == "__main__":
-    checkpoint_folder = Path("./runs/default_2021_09_18-20_28_41/checkpoints")
+    checkpoint_folder = Path("./runs/default_2021_11_02-23_37_18/checkpoints")
     cfg = load_yaml(checkpoint_folder / "config.yaml")
-    model = get_instance(cfg["pipeline"]["model"])
+    model = get_instance(cfg["pipeline"]["model"], registry=MODEL_REGISTRY)
+    tf = get_instance_recursively(cfg["transform"]["val"], registry=TRANSFORM_REGISTRY)
     load_model(model, checkpoint_folder / "best_loss.pth")
     device = get_device()
-    inference_model = SegmentationModel(model, None)
-    rgbs, pred = inference_model.predict(
-        [
-            "./data/images/1.png",
-            "./data/images/1.png",
-            "./data/images/1.png",
-            "./data/images/1.png",
-        ],
-        device=device,
-        batch_size=2,
-        return_inp=True,
-    )
-    print(rgbs.shape)
-    print(pred.shape)
+    print(device)
+    datasets = TestImageDataset(img_ls=[
+        "../../../Lyft/CameraRGB/F61-1.png",
+        "../../../Lyft/CameraRGB/F61-1.png",
+        "../../../Lyft/CameraRGB/F61-1.png",
+        "../../../Lyft/CameraRGB/F61-1.png",
+    ], alb_transform=tf)
+    model.to(device)
+    dataloader = torch.utils.data.DataLoader(datasets, batch_size=2, shuffle=False, num_workers=0)
+    save_dir = Path("./")
+    for data in dataloader:
+        im = data["input"]
 
-    save_dir = Path("./demo")
-    save_dir.mkdir(parents=True, exist_ok=True)
-    pred = multi_class_prediction(pred).unsqueeze(1)
-    outs = image_batch_show(pred)
-    rgbs = image_batch_show(rgbs)
+        with torch.no_grad():
+            output = model(im.to(device))
+        output = output['out']
+        output = torch.argmax(output, dim=1)  # From B x N_CLS x W x H -> B x W x H
 
-    save_image(rgbs, str(save_dir / "pred.png"), normalize=True)
-    save_image(outs, str(save_dir / "rbgs.png"))
+        im = inverse_normalize_batch(im)
+        im = make_grid(im, nrow=2, normalize=True).float().cpu()  # B,C,H,W
+        im = tensor2plt(im, title="inputs")
+
+        output = tensor2cmap(output, label_format="cityscape")
+        output = make_grid(output, nrow=2, normalize=False).float().cpu()
+        output = tensor2plt(output.long(), title="labels")
+        plt.show()
+        break

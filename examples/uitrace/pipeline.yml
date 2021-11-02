@@ -66,7 +66,7 @@ data: # instruction here
   dataset:
     name: LyftDataset.from_folder
     args:
-      sample: False
+      sample: True
       root: "../../../unitydatasets/FPT_Dataset_v2/"
       test: True
       mask_folder_name: SemanticSegmentation_Front
